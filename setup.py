@@ -22,7 +22,7 @@ setup(
     license="Apache",
     url="https://github.com/patil-suraj/onnx_transformers",
     install_requires=[
-        "transformers>=3.1.0",
+        "transformers==3.1.0",
         "onnxruntime>=1.4.0",
         "onnxruntime-tools>=1.4.2",
         "psutil",

@@ -29,7 +29,6 @@ from transformers.tokenization_utils import PreTrainedTokenizer
 from transformers.tokenization_utils_base import BatchEncoding, PaddingStrategy
 from transformers.utils import logging
 
-
 if is_tf_available():
     import tensorflow as tf
     from transformers.modeling_tf_auto import (
@@ -66,12 +65,9 @@ if TYPE_CHECKING:
     from transformers.modeling_tf_utils import TFPreTrainedModel
     from transformers.modeling_utils import PreTrainedModel
 
-
 ONNX_CACHE_DIR = Path(os.path.dirname(__file__)).parent.joinpath(".onnx")
 
-
 logger = logging.get_logger(__name__)
-
 
 # Constants from the performance optimization available in onnxruntime
 # It needs to be done before importing onnxruntime
@@ -80,7 +76,6 @@ os.environ["OMP_WAIT_POLICY"] = "ACTIVE"
 
 
 def create_model_for_provider(model_path: str, provider: str) -> InferenceSession:
-
     assert provider in get_all_providers(), f"provider {provider} not found, {get_all_providers()}"
 
     # Few properties that might have an impact on performances (provided by MS)
@@ -220,11 +215,11 @@ class PipelineDataFormat:
     SUPPORTED_FORMATS = ["json", "csv", "pipe"]
 
     def __init__(
-        self,
-        output_path: Optional[str],
-        input_path: Optional[str],
-        column: Optional[str],
-        overwrite: bool = False,
+            self,
+            output_path: Optional[str],
+            input_path: Optional[str],
+            column: Optional[str],
+            overwrite: bool = False,
     ):
         self.output_path = output_path
         self.input_path = input_path
@@ -277,11 +272,11 @@ class PipelineDataFormat:
 
     @staticmethod
     def from_str(
-        format: str,
-        output_path: Optional[str],
-        input_path: Optional[str],
-        column: Optional[str],
-        overwrite=False,
+            format: str,
+            output_path: Optional[str],
+            input_path: Optional[str],
+            column: Optional[str],
+            overwrite=False,
     ) -> "PipelineDataFormat":
         """
         Creates an instance of the right subclass of :class:`~transformers.pipelines.PipelineDataFormat` depending
@@ -325,11 +320,11 @@ class CsvPipelineDataFormat(PipelineDataFormat):
     """
 
     def __init__(
-        self,
-        output_path: Optional[str],
-        input_path: Optional[str],
-        column: Optional[str],
-        overwrite=False,
+            self,
+            output_path: Optional[str],
+            input_path: Optional[str],
+            column: Optional[str],
+            overwrite=False,
     ):
         super().__init__(output_path, input_path, column, overwrite=overwrite)
 
@@ -370,11 +365,11 @@ class JsonPipelineDataFormat(PipelineDataFormat):
     """
 
     def __init__(
-        self,
-        output_path: Optional[str],
-        input_path: Optional[str],
-        column: Optional[str],
-        overwrite=False,
+            self,
+            output_path: Optional[str],
+            input_path: Optional[str],
+            column: Optional[str],
+            overwrite=False,
     ):
         super().__init__(output_path, input_path, column, overwrite=overwrite)
 
@@ -515,19 +510,20 @@ class Pipeline(_ScikitCompat):
     default_input_names = None
 
     def __init__(
-        self,
-        model: Union["PreTrainedModel", "TFPreTrainedModel", str],
-        tokenizer: PreTrainedTokenizer,
-        config: PretrainedConfig,
-        modelcard: Optional[ModelCard] = None,
-        framework: Optional[str] = None,
-        task: str = "",
-        args_parser: ArgumentHandler = None,
-        device: int = -1,
-        binary_output: bool = False,
-        onnx: bool = True,
-        quantized: bool = False,
-        graph_path: Optional[Path] = None,
+            self,
+            model: Union["PreTrainedModel", "TFPreTrainedModel", str],
+            tokenizer: PreTrainedTokenizer,
+            config: PretrainedConfig,
+            modelcard: Optional[ModelCard] = None,
+            framework: Optional[str] = None,
+            task: str = "",
+            args_parser: ArgumentHandler = None,
+            device: int = -1,
+            binary_output: bool = False,
+            onnx: bool = True,
+            quantized: bool = False,
+            graph_path: Optional[Path] = None,
+            use_gpu=False
     ):
 
         if framework is None:
@@ -557,15 +553,15 @@ class Pipeline(_ScikitCompat):
                 self._export_onnx_graph(input_names_path)
 
             logger.info(f"loading onnx graph from {self.graph_path.as_posix()}")
-            self.onnx_model = create_model_for_provider(str(graph_path), "CPUExecutionProvider")
+            self.onnx_model = create_model_for_provider(str(graph_path), "CPUExecutionProvider" if not use_gpu else "CUDAExecutionProvider")
             self.input_names = json.load(open(input_names_path))
             self.framework = "pt"
             if quantized:
                 onnx_opt_model_path = graph_path.parent.joinpath(f"{graph_path.stem}-opt.onnx")
                 quantized_model_path = graph_path.parent.joinpath(f"{graph_path.stem}-opt-quantized.onnx")
                 if not quantized_model_path.exists() or not onnx_opt_model_path.exists():
-                    self._create_quantized_graph(onnx_opt_model_path)
-                self.onnx_model = create_model_for_provider(quantized_model_path.as_posix(), "CPUExecutionProvider")
+                    self._create_quantized_graph(onnx_opt_model_path, use_gpu)
+                self.onnx_model = create_model_for_provider(quantized_model_path.as_posix(), "CPUExecutionProvider" if not use_gpu else "CUDAExecutionProvider")
             self._warup_onnx_graph()
 
         # TODO: handle this
@@ -704,17 +700,18 @@ class Pipeline(_ScikitCompat):
         else:
             return predictions.numpy()
 
-    def _create_quantized_graph(self, onnx_opt_model_path):
-        #TODO: add option gpt2 if need
+    def _create_quantized_graph(self, onnx_opt_model_path, use_gpu=False):
+        # TODO: add option gpt2 if need
         opt_options = BertOptimizationOptions('bert')
         opt_options.enable_embed_layer_norm = False
-
+        opt_options.enable_gelu_approximation = True
         onnx_opt_model = optimizer.optimize_model(self.graph_path.as_posix(),
-                            'bert_tf' if self.framework == "tf" else "bert",
-                            num_heads=self.config.num_attention_heads,
-                            hidden_size=self.config.hidden_size,
-                            optimization_options=opt_options)
-
+                                                  'bert_tf' if self.framework == "tf" else "bert",
+                                                  num_heads=self.config.num_attention_heads,
+                                                  hidden_size=self.config.hidden_size,
+                                                  optimization_options=opt_options,
+                                                  use_gpu=use_gpu)
+        onnx_opt_model.convert_float_to_float16()
         onnx_opt_model.save_model_to_file(onnx_opt_model_path.as_posix())
         quantized_model_path = quantize(onnx_opt_model_path)
 
@@ -730,7 +727,7 @@ class Pipeline(_ScikitCompat):
         if not self.graph_path.parent.exists():
             os.makedirs(self.graph_path.parent.as_posix())
 
-        logger.info(f"Saving onnx graph at { self.graph_path.as_posix()}")
+        logger.info(f"Saving onnx graph at {self.graph_path.as_posix()}")
 
         if self.framework == "pt":
             convert_pytorch(self, opset=11, output=self.graph_path, use_external_format=False)
@@ -793,16 +790,16 @@ class FeatureExtractionPipeline(Pipeline):
     """
 
     def __init__(
-        self,
-        model: Union["PreTrainedModel", "TFPreTrainedModel"],
-        tokenizer: PreTrainedTokenizer,
-        config: PretrainedConfig,
-        modelcard: Optional[ModelCard] = None,
-        framework: Optional[str] = None,
-        args_parser: ArgumentHandler = None,
-        device: int = -1,
-        task: str = "",
-        **kwargs
+            self,
+            model: Union["PreTrainedModel", "TFPreTrainedModel"],
+            tokenizer: PreTrainedTokenizer,
+            config: PretrainedConfig,
+            modelcard: Optional[ModelCard] = None,
+            framework: Optional[str] = None,
+            args_parser: ArgumentHandler = None,
+            device: int = -1,
+            task: str = "",
+            **kwargs
     ):
         super().__init__(
             model=model,
@@ -1056,21 +1053,21 @@ class TokenClassificationPipeline(Pipeline):
     default_input_names = "sequences"
 
     def __init__(
-        self,
-        model: Union["PreTrainedModel", "TFPreTrainedModel"],
-        tokenizer: PreTrainedTokenizer,
-        config: PretrainedConfig,
-        modelcard: Optional[ModelCard] = None,
-        framework: Optional[str] = None,
-        args_parser: ArgumentHandler = None,
-        device: int = -1,
-        binary_output: bool = False,
-        onnx: bool = True,
-        quantized: bool = False,
-        graph_path: Optional[str] = None,
-        ignore_labels=["O"],
-        task: str = "",
-        grouped_entities: bool = False,
+            self,
+            model: Union["PreTrainedModel", "TFPreTrainedModel"],
+            tokenizer: PreTrainedTokenizer,
+            config: PretrainedConfig,
+            modelcard: Optional[ModelCard] = None,
+            framework: Optional[str] = None,
+            args_parser: ArgumentHandler = None,
+            device: int = -1,
+            binary_output: bool = False,
+            onnx: bool = True,
+            quantized: bool = False,
+            graph_path: Optional[str] = None,
+            ignore_labels=["O"],
+            task: str = "",
+            grouped_entities: bool = False,
     ):
         super().__init__(
             model=model,
@@ -1160,7 +1157,6 @@ class TokenClassificationPipeline(Pipeline):
             ]
 
             for idx, label_idx in filtered_labels_idx:
-
                 entity = {
                     "word": self.tokenizer.convert_ids_to_tokens(int(input_ids[idx])),
                     "score": score[idx][label_idx].item(),
@@ -1225,8 +1221,8 @@ class TokenClassificationPipeline(Pipeline):
             # If the current entity is similar and adjacent to the previous entity, append it to the disaggregated entity group
             # The split is meant to account for the "B" and "I" suffixes
             if (
-                entity["entity"].split("-")[-1] == entity_group_disagg[-1]["entity"].split("-")[-1]
-                and entity["index"] == entity_group_disagg[-1]["index"] + 1
+                    entity["entity"].split("-")[-1] == entity_group_disagg[-1]["entity"].split("-")[-1]
+                    and entity["index"] == entity_group_disagg[-1]["index"] + 1
             ):
                 entity_group_disagg += [entity]
                 # Group the entities at the last entity
@@ -1325,14 +1321,14 @@ class QuestionAnsweringPipeline(Pipeline):
     default_input_names = "question,context"
 
     def __init__(
-        self,
-        model: Union["PreTrainedModel", "TFPreTrainedModel"],
-        tokenizer: PreTrainedTokenizer,
-        modelcard: Optional[ModelCard] = None,
-        framework: Optional[str] = None,
-        device: int = -1,
-        task: str = "",
-        **kwargs
+            self,
+            model: Union["PreTrainedModel", "TFPreTrainedModel"],
+            tokenizer: PreTrainedTokenizer,
+            modelcard: Optional[ModelCard] = None,
+            framework: Optional[str] = None,
+            device: int = -1,
+            task: str = "",
+            **kwargs
     ):
         super().__init__(
             model=model,
@@ -1351,7 +1347,7 @@ class QuestionAnsweringPipeline(Pipeline):
 
     @staticmethod
     def create_sample(
-        question: Union[str, List[str]], context: Union[str, List[str]]
+            question: Union[str, List[str]], context: Union[str, List[str]]
     ) -> Union[SquadExample, List[SquadExample]]:
         """
         QuestionAnsweringPipeline leverages the :class:`~transformers.SquadExample` internally.
@@ -1500,7 +1496,7 @@ class QuestionAnsweringPipeline(Pipeline):
                         "start": np.where(char_to_word == feature.token_to_orig_map[s])[0][0].item(),
                         "end": np.where(char_to_word == feature.token_to_orig_map[e])[0][-1].item(),
                         "answer": " ".join(
-                            example.doc_tokens[feature.token_to_orig_map[s] : feature.token_to_orig_map[e] + 1]
+                            example.doc_tokens[feature.token_to_orig_map[s]: feature.token_to_orig_map[e] + 1]
                         ),
                     }
                     for s, e, score in zip(starts, ends, scores)
@@ -1654,15 +1650,15 @@ SUPPORTED_TASKS = {
 
 
 def pipeline(
-    task: str,
-    model: Optional[str] = None,
-    config: Optional[Union[str, PretrainedConfig]] = None,
-    tokenizer: Optional[Union[str, PreTrainedTokenizer]] = None,
-    framework: Optional[str] = None,
-    onnx: bool = True,
-    quantized: bool = False,
-    local_model:bool = False,
-    **kwargs
+        task: str,
+        model: Optional[str] = None,
+        config: Optional[Union[str, PretrainedConfig]] = None,
+        tokenizer: Optional[Union[str, PreTrainedTokenizer]] = None,
+        framework: Optional[str] = None,
+        onnx: bool = True,
+        quantized: bool = False,
+        local_model: bool = False,
+        **kwargs
 ) -> Pipeline:
     """
     Utility factory method to build a :class:`~transformers.Pipeline`.
