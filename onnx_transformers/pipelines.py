@@ -711,7 +711,7 @@ class Pipeline(_ScikitCompat):
                                                   hidden_size=self.config.hidden_size,
                                                   optimization_options=opt_options,
                                                   use_gpu=use_gpu)
-        onnx_opt_model.convert_float_to_float16()
+        # onnx_opt_model.convert_float_to_float16()
         onnx_opt_model.save_model_to_file(onnx_opt_model_path.as_posix())
         quantized_model_path = quantize(onnx_opt_model_path)
 
