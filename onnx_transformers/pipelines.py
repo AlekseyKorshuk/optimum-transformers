@@ -525,7 +525,8 @@ class Pipeline(_ScikitCompat):
             graph_path: Optional[Path] = None,
             use_gpu=False
     ):
-
+        if use_gpu:
+            print("Using GPU")
         if framework is None:
             framework = get_framework(model)
 
@@ -1658,6 +1659,7 @@ def pipeline(
         onnx: bool = True,
         quantized: bool = False,
         local_model: bool = False,
+        use_gpu=False,
         **kwargs
 ) -> Pipeline:
     """
@@ -1805,5 +1807,6 @@ def pipeline(
         quantized=quantized,
         graph_path=graph_path,
         config=config,
+        use_gpu=use_gpu,
         **kwargs,
     )
