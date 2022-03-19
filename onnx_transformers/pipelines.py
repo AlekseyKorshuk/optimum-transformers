@@ -548,7 +548,6 @@ class Pipeline(_ScikitCompat):
         if self.framework == "pt" and self.device.type == "cuda" and (not onnx):
             self.model = self.model.to(self.device)
 
-        print(graph_path.as_posix())
         # Export the graph
         if onnx:
             input_names_path = graph_path.parent.joinpath(f"{os.path.basename(graph_path)}.input_names.json")
@@ -713,12 +712,12 @@ class Pipeline(_ScikitCompat):
         # TODO: add option gpt2 if need
         print(f"Creating quantized graph from {self.graph_path.as_posix()} to {quantized_model_path.as_posix()}")
         opt_options = FusionOptions('bert')
-        opt_options.enable_embed_layer_norm = False
         opt_options.enable_gelu_approximation = True
+        opt_options.enable_embed_layer_norm = False
         onnx_opt_model = optimizer.optimize_model(self.graph_path.as_posix(),
                                                   'bert_tf' if self.framework == "tf" else "bert",
-                                                  num_heads=0,
-                                                  hidden_size=0,
+                                                  num_heads=self.config.num_attention_heads,
+                                                  hidden_size=self.config.hidden_size,
                                                   optimization_options=opt_options,
                                                   use_gpu=use_gpu)
         if float16:
@@ -761,7 +760,7 @@ class Pipeline(_ScikitCompat):
         predictions = self.onnx_model.run(None, inputs_onnx)
         return predictions
 
-    def _warup_onnx_graph(self, n=10):
+    def _warup_onnx_graph(self, n=100):
         model_inputs = self.tokenizer("My name is Bert", return_tensors="pt")
         for _ in range(n):
             self._forward_onnx(model_inputs)
