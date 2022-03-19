@@ -524,8 +524,8 @@ class Pipeline(_ScikitCompat):
             onnx: bool = True,
             quantized: bool = False,
             graph_path: Optional[Path] = None,
-            use_gpu=False,
-            float16=True,
+            use_gpu: bool = False,
+            float16: bool = True,
     ):
 
         if framework is None:
