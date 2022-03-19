@@ -78,7 +78,7 @@ os.environ["OMP_WAIT_POLICY"] = "ACTIVE"
 
 def create_model_for_provider(model_path: str, provider: str) -> InferenceSession:
     assert provider in get_all_providers(), f"provider {provider} not found, {get_all_providers()}"
-
+    print(f"Creating model for provider: {model_path}")
     # Few properties that might have an impact on performances (provided by MS)
     options = SessionOptions()
     options.intra_op_num_threads = 1
@@ -709,7 +709,7 @@ class Pipeline(_ScikitCompat):
 
     def _create_quantized_graph(self, onnx_opt_model_path, quantized_model_path, use_gpu=False, float16=True):
         # TODO: add option gpt2 if need
-        opt_options = BertOptimizationOptions('bert')
+        opt_options = FusionOptions('bert')
         opt_options.enable_embed_layer_norm = False
         opt_options.enable_gelu_approximation = True
         onnx_opt_model = optimizer.optimize_model(self.graph_path.as_posix(),
