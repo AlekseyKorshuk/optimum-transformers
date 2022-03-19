@@ -555,8 +555,9 @@ class Pipeline(_ScikitCompat):
                 self._export_onnx_graph(input_names_path)
 
             logger.info(f"loading onnx graph from {self.graph_path.as_posix()}")
-            self.onnx_model = create_model_for_provider(str(graph_path),
-                                                        "CPUExecutionProvider" if not use_gpu else "CUDAExecutionProvider")
+            if not quantized:
+                self.onnx_model = create_model_for_provider(str(graph_path),
+                                                            "CPUExecutionProvider" if not use_gpu else "CUDAExecutionProvider")
             self.input_names = json.load(open(input_names_path))
             self.framework = "pt"
             if quantized:
