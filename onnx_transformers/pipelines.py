@@ -1659,9 +1659,9 @@ class QuestionAnsweringPipeline(Pipeline):
         )
 
         self._args_parser = QuestionAnsweringArgumentHandler()
-        self.check_model_type(
-            TF_MODEL_FOR_QUESTION_ANSWERING_MAPPING if self.framework == "tf" else MODEL_FOR_QUESTION_ANSWERING_MAPPING
-        )
+        # self.check_model_type(
+        #     TF_MODEL_FOR_QUESTION_ANSWERING_MAPPING if self.framework == "tf" else MODEL_FOR_QUESTION_ANSWERING_MAPPING
+        # )
 
     @staticmethod
     def create_sample(
