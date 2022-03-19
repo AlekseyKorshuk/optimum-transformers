@@ -755,6 +755,7 @@ class Pipeline(_ScikitCompat):
             json.dump(self.input_names, f)
 
     def _forward_onnx(self, inputs, return_tensors=False):
+        print(inputs)
         # inputs_onnx = {k: v.cpu().detach().numpy() for k, v in inputs.items() if k in self.input_names}
         inputs_onnx = {k: v.cpu().detach().numpy() for k, v in inputs.items()}
         predictions = self.onnx_model.run(None, inputs_onnx)
@@ -1437,43 +1438,129 @@ class QuestionAnsweringPipeline(Pipeline):
             - **answer** (:obj:`str`) -- The answer to the question.
         """
         # Set defaults values
-        kwargs.setdefault("topk", 1)
+        kwargs.setdefault("top_k", 1)
         kwargs.setdefault("doc_stride", 128)
         kwargs.setdefault("max_answer_len", 15)
         kwargs.setdefault("max_seq_len", 384)
         kwargs.setdefault("max_question_len", 64)
         kwargs.setdefault("handle_impossible_answer", False)
 
-        if kwargs["topk"] < 1:
-            raise ValueError("topk parameter should be >= 1 (got {})".format(kwargs["topk"]))
+        if kwargs["top_k"] < 1:
+            raise ValueError("top_k parameter should be >= 1 (got {})".format(kwargs["top_k"]))
 
         if kwargs["max_answer_len"] < 1:
             raise ValueError("max_answer_len parameter should be >= 1 (got {})".format(kwargs["max_answer_len"]))
 
         # Convert inputs to features
         examples = self._args_parser(*args, **kwargs)
-        features_list = [
-            squad_convert_examples_to_features(
-                examples=[example],
-                tokenizer=self.tokenizer,
-                max_seq_length=kwargs["max_seq_len"],
-                doc_stride=kwargs["doc_stride"],
-                max_query_length=kwargs["max_question_len"],
-                padding_strategy=PaddingStrategy.DO_NOT_PAD.value,
-                is_training=False,
-                tqdm_enabled=False,
-            )
-            for example in examples
-        ]
-        all_answers = []
+        if not self.tokenizer.is_fast:
+            features_list = [
+                squad_convert_examples_to_features(
+                    examples=[example],
+                    tokenizer=self.tokenizer,
+                    max_seq_length=kwargs["max_seq_len"],
+                    doc_stride=kwargs["doc_stride"],
+                    max_query_length=kwargs["max_question_len"],
+                    padding_strategy=PaddingStrategy.DO_NOT_PAD.value,
+                    is_training=False,
+                    tqdm_enabled=False,
+                )
+                for example in examples
+            ]
+        else:
+            padding = "do_not_pad"
+            doc_stride = 123
+            max_question_len = 64
+            max_seq_len = 384
+            features_list = []
+            for example in examples:
+                # Define the side we want to truncate / pad and the text/pair sorting
+                question_first = self.tokenizer.padding_side == "right"
+
+                encoded_inputs = self.tokenizer(
+                    text=example.question_text if question_first else example.context_text,
+                    text_pair=example.context_text if question_first else example.question_text,
+                    padding=padding,
+                    truncation="only_second" if question_first else "only_first",
+                    max_length=max_seq_len,
+                    stride=doc_stride,
+                    return_tensors="np",
+                    return_token_type_ids=True,
+                    return_overflowing_tokens=True,
+                    return_offsets_mapping=True,
+                    return_special_tokens_mask=True,
+                )
+                # When the input is too long, it's converted in a batch of inputs with overflowing tokens
+                # and a stride of overlap between the inputs. If a batch of inputs is given, a special output
+                # "overflow_to_sample_mapping" indicate which member of the encoded batch belong to which original batch sample.
+                # Here we tokenize examples one-by-one so we don't need to use "overflow_to_sample_mapping".
+                # "num_span" is the number of output samples generated from the overflowing tokens.
+                num_spans = len(encoded_inputs["input_ids"])
+
+                # p_mask: mask with 1 for token than cannot be in the answer (0 for token which can be in an answer)
+                # We put 0 on the tokens from the context and 1 everywhere else (question and special tokens)
+                p_mask = np.asarray(
+                    [
+                        [tok != 1 if question_first else 0 for tok in encoded_inputs.sequence_ids(span_id)]
+                        for span_id in range(num_spans)
+                    ]
+                )
+
+                # keep the cls_token unmasked (some models use it to indicate unanswerable questions)
+                if self.tokenizer.cls_token_id is not None:
+                    cls_index = np.nonzero(encoded_inputs["input_ids"] == self.tokenizer.cls_token_id)
+                    p_mask[cls_index] = 0
+                features = []
+                for span_idx in range(num_spans):
+                    input_ids_span_idx = encoded_inputs["input_ids"][span_idx]
+                    attention_mask_span_idx = (
+                        encoded_inputs["attention_mask"][span_idx] if "attention_mask" in encoded_inputs else None
+                    )
+                    token_type_ids_span_idx = (
+                        encoded_inputs["token_type_ids"][span_idx] if "token_type_ids" in encoded_inputs else None
+                    )
+                    submask = p_mask[span_idx]
+                    if isinstance(submask, np.ndarray):
+                        submask = submask.tolist()
+                    features.append(
+                        SquadFeatures(
+                            input_ids=input_ids_span_idx,
+                            attention_mask=attention_mask_span_idx,
+                            token_type_ids=token_type_ids_span_idx,
+                            p_mask=submask,
+                            encoding=encoded_inputs[span_idx],
+                            # We don't use the rest of the values - and actually
+                            # for Fast tokenizer we could totally avoid using SquadFeatures and SquadExample
+                            cls_index=None,
+                            token_to_orig_map={},
+                            example_index=0,
+                            unique_id=0,
+                            paragraph_len=0,
+                            token_is_max_context=0,
+                            tokens=[],
+                            start_position=0,
+                            end_position=0,
+                            is_impossible=False,
+                            qas_id=None,
+                        )
+                    )
+                features_list.append(features)
+
+        model_outputs = []
+
         for features, example in zip(features_list, examples):
             model_input_names = self.tokenizer.model_input_names + ["input_ids"]
             fw_args = {k: [feature.__dict__[k] for feature in features] for k in model_input_names}
-
+            try:
+                self.onnx
+            except:
+                self.onnx = False
             # Manage tensor allocation on correct device
             if self.onnx:
                 # fw_args = {k: torch.tensor(v) for (k, v) in fw_args.items()}
-                fw_args = {k: np.array(v) for (k, v) in fw_args.items()}
+                fw_args = {k: torch.tensor(v) for (k, v) in fw_args.items()}
+                # fw_args['input_ids'] = torch.from_numpy(fw_args['input_ids'])
+                # fw_args['attention_mask'] = torch.from_numpy(fw_args['attention_mask'])
                 start, end = self._forward_onnx(fw_args)[:2]
             else:
                 with self.device_placement():
@@ -1487,55 +1574,108 @@ class QuestionAnsweringPipeline(Pipeline):
                             fw_args = {k: torch.tensor(v, device=self.device) for (k, v) in fw_args.items()}
                             start, end = self.model(**fw_args)[:2]
                             start, end = start.cpu().numpy(), end.cpu().numpy()
+            model_outputs.append(
+                {"start": start, "end": end, "example": example, **(features[0].__dict__)}
+            )
+        min_null_score = 1000000  # large and positive
 
-            min_null_score = 1000000  # large and positive
-            answers = []
-            for (feature, start_, end_) in zip(features, start, end):
-                # Ensure padded tokens & question tokens cannot belong to the set of candidate answers.
-                undesired_tokens = np.abs(np.array(feature.p_mask) - 1) & feature.attention_mask
+        answers = []
+        for output in model_outputs:
+            start_ = output["start"]
+            end_ = output["end"]
+            example = output["example"]
 
-                # Generate mask
-                undesired_tokens_mask = undesired_tokens == 0.0
+            # Ensure padded tokens & question tokens cannot belong to the set of candidate answers.
+            undesired_tokens = np.abs(np.array(output["p_mask"]) - 1)
+            if output.get("attention_mask", None) is not None:
+                undesired_tokens = undesired_tokens & output["attention_mask"]
 
-                # Make sure non-context indexes in the tensor cannot contribute to the softmax
-                start_ = np.where(undesired_tokens_mask, -10000.0, start_)
-                end_ = np.where(undesired_tokens_mask, -10000.0, end_)
+            # Generate mask
+            undesired_tokens_mask = undesired_tokens == 0.0
 
-                # Normalize logits and spans to retrieve the answer
-                start_ = np.exp(start_ - np.log(np.sum(np.exp(start_), axis=-1, keepdims=True)))
-                end_ = np.exp(end_ - np.log(np.sum(np.exp(end_), axis=-1, keepdims=True)))
+            # Make sure non-context indexes in the tensor cannot contribute to the softmax
+            start_ = np.where(undesired_tokens_mask, -10000.0, start_)
+            end_ = np.where(undesired_tokens_mask, -10000.0, end_)
 
-                if kwargs["handle_impossible_answer"]:
-                    min_null_score = min(min_null_score, (start_[0] * end_[0]).item())
+            # Normalize logits and spans to retrieve the answer
+            start_ = np.exp(start_ - np.log(np.sum(np.exp(start_), axis=-1, keepdims=True)))
+            end_ = np.exp(end_ - np.log(np.sum(np.exp(end_), axis=-1, keepdims=True)))
 
-                # Mask CLS
-                start_[0] = end_[0] = 0.0
+            if kwargs["handle_impossible_answer"]:
+                min_null_score = min(min_null_score, (start_[0, 0] * end_[0, 0]).item())
 
-                starts, ends, scores = self.decode(start_, end_, kwargs["topk"], kwargs["max_answer_len"])
+            # Mask CLS
+            start_[0, 0] = end_[0, 0] = 0.0
+
+            starts, ends, scores = self.decode(start_, end_, kwargs["top_k"], kwargs["max_answer_len"])
+            if not self.tokenizer.is_fast:
                 char_to_word = np.array(example.char_to_word_offset)
 
                 # Convert the answer (tokens) back to the original text
-                answers += [
-                    {
-                        "score": score.item(),
-                        "start": np.where(char_to_word == feature.token_to_orig_map[s])[0][0].item(),
-                        "end": np.where(char_to_word == feature.token_to_orig_map[e])[0][-1].item(),
-                        "answer": " ".join(
-                            example.doc_tokens[feature.token_to_orig_map[s]: feature.token_to_orig_map[e] + 1]
-                        ),
-                    }
-                    for s, e, score in zip(starts, ends, scores)
-                ]
+                # Score: score from the model
+                # Start: Index of the first character of the answer in the context string
+                # End: Index of the character following the last character of the answer in the context string
+                # Answer: Plain text of the answer
+                for s, e, score in zip(starts, ends, scores):
+                    token_to_orig_map = output["token_to_orig_map"]
+                    answers.append(
+                        {
+                            "score": score.item(),
+                            "start": np.where(char_to_word == token_to_orig_map[s])[0][0].item(),
+                            "end": np.where(char_to_word == token_to_orig_map[e])[0][-1].item(),
+                            "answer": " ".join(example.doc_tokens[token_to_orig_map[s]: token_to_orig_map[e] + 1]),
+                        }
+                    )
+            else:
+                # Convert the answer (tokens) back to the original text
+                # Score: score from the model
+                # Start: Index of the first character of the answer in the context string
+                # End: Index of the character following the last character of the answer in the context string
+                # Answer: Plain text of the answer
+                question_first = bool(self.tokenizer.padding_side == "right")
+                enc = output["encoding"]
 
-            if kwargs["handle_impossible_answer"]:
-                answers.append({"score": min_null_score, "start": 0, "end": 0, "answer": ""})
+                # Encoding was *not* padded, input_ids *might*.
+                # It doesn't make a difference unless we're padding on
+                # the left hand side, since now we have different offsets
+                # everywhere.
+                if self.tokenizer.padding_side == "left":
+                    offset = (output["input_ids"] == self.tokenizer.pad_token_id).numpy().sum()
+                else:
+                    offset = 0
 
-            answers = sorted(answers, key=lambda x: x["score"], reverse=True)[: kwargs["topk"]]
-            all_answers += answers
+                # Sometimes the max probability token is in the middle of a word so:
+                # - we start by finding the right word containing the token with `token_to_word`
+                # - then we convert this word in a character span with `word_to_chars`
+                sequence_index = 1 if question_first else 0
+                for s, e, score in zip(starts, ends, scores):
+                    s = s - offset
+                    e = e - offset
+                    try:
+                        start_word = enc.token_to_word(s)
+                        end_word = enc.token_to_word(e)
+                        start_index = enc.word_to_chars(start_word, sequence_index=sequence_index)[0]
+                        end_index = enc.word_to_chars(end_word, sequence_index=sequence_index)[1]
+                    except Exception:
+                        # Some tokenizers don't really handle words. Keep to offsets then.
+                        start_index = enc.offsets[s][0]
+                        end_index = enc.offsets[e][1]
 
-        if len(all_answers) == 1:
-            return all_answers[0]
-        return all_answers
+                    answers.append(
+                        {
+                            "score": score.item(),
+                            "start": start_index,
+                            "end": end_index,
+                            "answer": example.context_text[start_index:end_index],
+                        }
+                    )
+
+        if kwargs["handle_impossible_answer"]:
+            answers.append({"score": min_null_score, "start": 0, "end": 0, "answer": ""})
+        answers = sorted(answers, key=lambda x: x["score"], reverse=True)[:kwargs["top_k"]]
+        if len(answers) == 1:
+            return answers[0]
+        return answers
 
     def decode(self, start: np.ndarray, end: np.ndarray, topk: int, max_answer_len: int) -> Tuple:
         """
