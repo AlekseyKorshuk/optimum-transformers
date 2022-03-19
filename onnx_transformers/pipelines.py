@@ -19,7 +19,7 @@ from onnxruntime.transformers.onnx_model_bert import BertOptimizationOptions, Fu
 from psutil import cpu_count
 from transformers import AutoConfig
 from transformers.configuration_utils import PretrainedConfig
-from transformers.convert_graph_to_onnx import convert_pytorch, convert_tensorflow, infer_shapes, quantize
+from transformers.convert_graph_to_onnx import convert_pytorch, convert_tensorflow, infer_shapes
 from transformers.data import SquadExample, squad_convert_examples_to_features
 from transformers.file_utils import add_end_docstrings, is_tf_available, is_torch_available
 from transformers.modelcard import ModelCard
@@ -28,6 +28,7 @@ from transformers import BasicTokenizer
 from transformers.tokenization_utils import PreTrainedTokenizer
 from transformers.tokenization_utils_base import BatchEncoding, PaddingStrategy
 from transformers.utils import logging
+from onnxruntime.quantization import quantize_dynamic, QuantType, quantize_static, quantize
 
 if is_tf_available():
     import tensorflow as tf
@@ -523,10 +524,10 @@ class Pipeline(_ScikitCompat):
             onnx: bool = True,
             quantized: bool = False,
             graph_path: Optional[Path] = None,
-            use_gpu=False
+            use_gpu=False,
+            float16=True,
     ):
-        if use_gpu:
-            print("Using GPU")
+
         if framework is None:
             framework = get_framework(model)
 
@@ -554,15 +555,20 @@ class Pipeline(_ScikitCompat):
                 self._export_onnx_graph(input_names_path)
 
             logger.info(f"loading onnx graph from {self.graph_path.as_posix()}")
-            self.onnx_model = create_model_for_provider(str(graph_path), "CPUExecutionProvider" if not use_gpu else "CUDAExecutionProvider")
+            self.onnx_model = create_model_for_provider(str(graph_path),
+                                                        "CPUExecutionProvider" if not use_gpu else "CUDAExecutionProvider")
             self.input_names = json.load(open(input_names_path))
             self.framework = "pt"
             if quantized:
-                onnx_opt_model_path = graph_path.parent.joinpath(f"{graph_path.stem}-opt.onnx")
-                quantized_model_path = graph_path.parent.joinpath(f"{graph_path.stem}-opt-quantized.onnx")
+                onnx_opt_model_path = graph_path.parent.joinpath(
+                    f"{graph_path.stem}-opt{'-float16' if float16 else ''}.onnx")
+                quantized_model_path = graph_path.parent.joinpath(
+                    f"{graph_path.stem}-opt{'-float16' if float16 else ''}-quantized.onnx")
                 if not quantized_model_path.exists() or not onnx_opt_model_path.exists():
-                    self._create_quantized_graph(onnx_opt_model_path, use_gpu)
-                self.onnx_model = create_model_for_provider(quantized_model_path.as_posix(), "CPUExecutionProvider" if not use_gpu else "CUDAExecutionProvider")
+                    self._create_quantized_graph(onnx_opt_model_path, quantized_model_path, use_gpu=use_gpu,
+                                                 float16=float16)
+                self.onnx_model = create_model_for_provider(quantized_model_path.as_posix(),
+                                                            "CPUExecutionProvider" if not use_gpu else "CUDAExecutionProvider")
             self._warup_onnx_graph()
 
         # TODO: handle this
@@ -701,7 +707,7 @@ class Pipeline(_ScikitCompat):
         else:
             return predictions.numpy()
 
-    def _create_quantized_graph(self, onnx_opt_model_path, use_gpu=False):
+    def _create_quantized_graph(self, onnx_opt_model_path, quantized_model_path, use_gpu=False, float16=True):
         # TODO: add option gpt2 if need
         opt_options = BertOptimizationOptions('bert')
         opt_options.enable_embed_layer_norm = False
@@ -712,9 +718,12 @@ class Pipeline(_ScikitCompat):
                                                   hidden_size=self.config.hidden_size,
                                                   optimization_options=opt_options,
                                                   use_gpu=use_gpu)
-        # onnx_opt_model.convert_float_to_float16()
+        if float16:
+            onnx_opt_model.convert_float_to_float16()
+
         onnx_opt_model.save_model_to_file(onnx_opt_model_path.as_posix())
-        quantized_model_path = quantize(onnx_opt_model_path)
+        quantize_dynamic(onnx_opt_model_path.as_posix(), quantized_model_path.as_posix(), weight_type=QuantType.QInt8)
+        # quantized_model_path = quantize(onnx_opt_model_path)
 
     def _export_onnx_graph(self, input_names_path: Path):
         # if graph exists, but we are here then it means something went wrong in previous load
@@ -1660,6 +1669,7 @@ def pipeline(
         quantized: bool = False,
         local_model: bool = False,
         use_gpu=False,
+        float16=True,
         **kwargs
 ) -> Pipeline:
     """
@@ -1808,5 +1818,6 @@ def pipeline(
         graph_path=graph_path,
         config=config,
         use_gpu=use_gpu,
+        float16=float16,
         **kwargs,
     )
