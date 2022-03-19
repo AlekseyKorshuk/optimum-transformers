@@ -755,7 +755,6 @@ class Pipeline(_ScikitCompat):
             json.dump(self.input_names, f)
 
     def _forward_onnx(self, inputs, return_tensors=False):
-        print(inputs)
         # inputs_onnx = {k: v.cpu().detach().numpy() for k, v in inputs.items() if k in self.input_names}
         inputs_onnx = {k: v.cpu().detach().numpy() for k, v in inputs.items()}
         predictions = self.onnx_model.run(None, inputs_onnx)
