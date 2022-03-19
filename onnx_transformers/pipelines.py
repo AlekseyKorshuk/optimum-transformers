@@ -1083,8 +1083,8 @@ class TokenClassificationPipeline(Pipeline):
             ignore_labels=["O"],
             task: str = "",
             grouped_entities: bool = False,
-            float16=True,
-
+            float16: bool = True,
+            use_gpu: bool = False,
     ):
         super().__init__(
             model=model,
@@ -1100,7 +1100,7 @@ class TokenClassificationPipeline(Pipeline):
             quantized=quantized,
             graph_path=graph_path,
             float16=float16,
-
+            use_gpu=use_gpu,
         )
 
         # self.check_model_type(
