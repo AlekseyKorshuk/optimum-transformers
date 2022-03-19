@@ -712,7 +712,7 @@ class Pipeline(_ScikitCompat):
         # TODO: add option gpt2 if need
         print(f"Creating quantized graph from {self.graph_path.as_posix()} to {quantized_model_path.as_posix()}")
         opt_options = FusionOptions('bert')
-        opt_options.enable_embed_layer_norm = False
+        # opt_options.enable_embed_layer_norm = False
         opt_options.enable_gelu_approximation = True
         onnx_opt_model = optimizer.optimize_model(self.graph_path.as_posix(),
                                                   'bert_tf' if self.framework == "tf" else "bert",
