@@ -19,7 +19,7 @@ from onnxruntime.transformers.onnx_model_bert import BertOptimizationOptions, Fu
 from psutil import cpu_count
 from transformers import AutoConfig
 from transformers.configuration_utils import PretrainedConfig
-from transformers.convert_graph_to_onnx import convert_pytorch, convert_tensorflow, infer_shapes
+from transformers.convert_graph_to_onnx import convert_pytorch, convert_tensorflow, infer_shapes, convert
 from transformers.data import SquadExample, squad_convert_examples_to_features
 from transformers.file_utils import add_end_docstrings, is_tf_available, is_torch_available
 from transformers.modelcard import ModelCard
@@ -548,6 +548,7 @@ class Pipeline(_ScikitCompat):
         if self.framework == "pt" and self.device.type == "cuda" and (not onnx):
             self.model = self.model.to(self.device)
 
+        print(graph_path.as_posix())
         # Export the graph
         if onnx:
             input_names_path = graph_path.parent.joinpath(f"{os.path.basename(graph_path)}.input_names.json")
@@ -741,13 +742,13 @@ class Pipeline(_ScikitCompat):
 
         logger.info(f"Saving onnx graph at {self.graph_path.as_posix()}")
 
-        # convert(framework=self.framework, model=self.model, tokenizer=self.tokenizer, opset=11,
-        #         output=Path("onnx_model/onnx_graph.onnx"), use_external_format=False,
-        #         pipeline_name=self.task)
-        if self.framework == "pt":
-            convert_pytorch(self, opset=11, output=self.graph_path, use_external_format=False)
-        else:
-            convert_tensorflow(self, opset=11, output=self.graph_path)
+        convert(framework=self.framework, model=self.model, tokenizer=self.tokenizer, opset=11,
+                output=Path("onnx_model/onnx_graph.onnx"), use_external_format=False,
+                pipeline_name=self.task)
+        # if self.framework == "pt":
+        #     convert_pytorch(self, opset=11, output=self.graph_path, use_external_format=False)
+        # else:
+        #     convert_tensorflow(self, opset=11, output=self.graph_path)
 
         # save input names
         self.input_names = infer_shapes(self, "pt")[0]
