@@ -66,7 +66,7 @@ if TYPE_CHECKING:
     from transformers.modeling_tf_utils import TFPreTrainedModel
     from transformers.modeling_utils import PreTrainedModel
 
-ONNX_CACHE_DIR = Path(os.path.dirname(__file__)).parent.joinpath(".onnx")
+ONNX_CACHE_DIR = Path(os.path.dirname(__file__)).parent.joinpath("onnx")
 
 logger = logging.get_logger(__name__)
 
@@ -741,6 +741,9 @@ class Pipeline(_ScikitCompat):
 
         logger.info(f"Saving onnx graph at {self.graph_path.as_posix()}")
 
+        # convert(framework=self.framework, model=self.model, tokenizer=self.tokenizer, opset=11,
+        #         output=Path("onnx_model/onnx_graph.onnx"), use_external_format=False,
+        #         pipeline_name=self.task)
         if self.framework == "pt":
             convert_pytorch(self, opset=11, output=self.graph_path, use_external_format=False)
         else:
