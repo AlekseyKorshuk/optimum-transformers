@@ -1078,6 +1078,8 @@ class TokenClassificationPipeline(Pipeline):
             ignore_labels=["O"],
             task: str = "",
             grouped_entities: bool = False,
+            float16=True,
+
     ):
         super().__init__(
             model=model,
@@ -1092,6 +1094,8 @@ class TokenClassificationPipeline(Pipeline):
             onnx=onnx,
             quantized=quantized,
             graph_path=graph_path,
+            float16=float16,
+
         )
 
         # self.check_model_type(
