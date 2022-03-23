@@ -27,3 +27,4 @@ def require_onnxruntime(test_case):
         return unittest.skip("test requires onnxruntime")(test_case)
     else:
         return test_case
+
