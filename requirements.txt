@@ -3,3 +3,5 @@ onnxruntime
 psutil
 coloredlogs
 onnx
+optimum
+datasets

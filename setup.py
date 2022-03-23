@@ -4,6 +4,10 @@ from os import path
 with open("README.md", encoding="utf-8") as f:
     long_description = f.read()
 
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
+
+
 extras = {}
 extras["testing"] = ["pytest", "pytest-xdist", "timeout-decorator", "psutil"]
 extras["quality"] = ["black >= 20.8b1", "isort >= 5", "flake8"]
@@ -21,12 +25,7 @@ setup(
     keywords =["ONNX", "onnxruntime", "NLP", "transformer", "transformers", "inference", "fast inference",],
     license="Apache",
     url="https://github.com/patil-suraj/onnx_transformers",
-    install_requires=[
-        "transformers",
-        "onnxruntime",
-        # "onnxruntime-tools>=1.4.2",
-        "psutil",
-    ],
+    install_requires=requirements,
     extras_require=extras,
     python_requires=">=3.6.0",
     classifiers=[

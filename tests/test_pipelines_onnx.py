@@ -23,7 +23,7 @@ class OnnxExportTestCase(unittest.TestCase):
 
     def test_ner_forward(self):
         self._test_pipeline_forward("ner", "My name is Bert")
-    
+
     def test_ner_quantized_forward(self):
         self._test_pipeline_forward("ner", "My name is Bert", quantized=True)
 
@@ -48,7 +48,7 @@ class OnnxExportTestCase(unittest.TestCase):
         except Exception as e:
             self.fail(e)
 
-    def _test_pipeline_forward(self, task, example, quantized:bool = False):
+    def _test_pipeline_forward(self, task, example, quantized: bool = False):
         try:
             # test onnx forward
             nlp = pipeline(task, onnx=True, quantized=quantized)
