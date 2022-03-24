@@ -99,7 +99,7 @@ class QAPipelineTests(unittest.TestCase, metaclass=PipelineTestCaseMeta):
             "question-answering",
             model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
             framework="pt",
-            onnx=False
+            use_onnx=False
         )
         outputs = question_answerer(
             question="Where was HuggingFace founded ?", context="HuggingFace was founded in Paris."
@@ -112,7 +112,7 @@ class QAPipelineTests(unittest.TestCase, metaclass=PipelineTestCaseMeta):
             "question-answering",
             model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
             framework="tf",
-            onnx=False
+            use_onnx=False
         )
         outputs = question_answerer(
             question="Where was HuggingFace founded ?", context="HuggingFace was founded in Paris."
@@ -126,7 +126,7 @@ class QAPipelineTests(unittest.TestCase, metaclass=PipelineTestCaseMeta):
             "question-answering",
             model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
             framework="pt",
-            onnx=True
+            use_onnx=True
         )
         outputs = question_answerer(
             question="Where was HuggingFace founded ?", context="HuggingFace was founded in Paris."
@@ -140,8 +140,8 @@ class QAPipelineTests(unittest.TestCase, metaclass=PipelineTestCaseMeta):
             "question-answering",
             model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
             framework="pt",
-            onnx=True,
-            quantized=True
+            use_onnx=True,
+            optimize=True
         )
         outputs = question_answerer(
             question="Where was HuggingFace founded ?", context="HuggingFace was founded in Paris."

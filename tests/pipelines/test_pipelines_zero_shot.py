@@ -127,7 +127,7 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
             "zero-shot-classification",
             model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
             framework="pt",
-            onnx=False
+            use_onnx=False
         )
         # There was a regression in 4.10 for this
         # Adding a test so we don't make the mistake again.
@@ -142,7 +142,7 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
             "zero-shot-classification",
             model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
             framework="pt",
-            onnx=False
+            use_onnx=False
         )
         outputs = zero_shot_classifier(
             "Who are you voting for in 2020?", candidate_labels=["politics", "public health", "science"]
@@ -164,7 +164,7 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
             "zero-shot-classification",
             model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
             framework="tf",
-            onnx=False
+            use_onnx=False
         )
         outputs = zero_shot_classifier(
             "Who are you voting for in 2020?", candidate_labels=["politics", "public health", "science"]
@@ -184,7 +184,7 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
         zero_shot_classifier = pipeline(
             "zero-shot-classification",
             model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
-            onnx=True,
+            use_onnx=True,
         )
         outputs = zero_shot_classifier(
             "Who are you voting for in 2020?", candidate_labels=["politics", "public health", "science"]
@@ -203,8 +203,8 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
         zero_shot_classifier = pipeline(
             "zero-shot-classification",
             model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
-            onnx=True,
-            quantized=True
+            use_onnx=True,
+            optimize=True
         )
         outputs = zero_shot_classifier(
             "Who are you voting for in 2020?", candidate_labels=["politics", "public health", "science"]

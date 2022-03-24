@@ -569,13 +569,13 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
     def test_tf_only(self):
         model_name = "hf-internal-testing/tiny-random-bert-tf-only"  # This model only has a TensorFlow version
         # We test that if we don't specificy framework='tf', it gets detected automatically
-        token_classifier = pipeline(task="ner", model=model_name, onnx=False)
+        token_classifier = pipeline(task="ner", model=model_name, use_onnx=False)
         self.assertEqual(token_classifier.framework, "tf")
 
     @require_tf
     def test_small_model_tf(self):
         model_name = "hf-internal-testing/tiny-bert-for-token-classification"
-        token_classifier = pipeline(task="token-classification", model=model_name, framework="tf", onnx=False)
+        token_classifier = pipeline(task="token-classification", model=model_name, framework="tf", use_onnx=False)
         outputs = token_classifier("This is a test !")
         self.assertEqual(
             nested_simplify(outputs),
@@ -602,7 +602,7 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
     @require_torch
     def test_small_model_pt(self):
         model_name = "hf-internal-testing/tiny-bert-for-token-classification"
-        token_classifier = pipeline(task="token-classification", model=model_name, framework="pt", onnx=False)
+        token_classifier = pipeline(task="token-classification", model=model_name, framework="pt", use_onnx=False)
         outputs = token_classifier("This is a test !")
         self.assertEqual(
             nested_simplify(outputs),
@@ -613,7 +613,7 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
         )
 
         token_classifier = pipeline(
-            task="token-classification", model=model_name, framework="pt", onnx=False, ignore_labels=["O", "I-MISC"]
+            task="token-classification", model=model_name, framework="pt", use_onnx=False, ignore_labels=["O", "I-MISC"]
         )
         outputs = token_classifier("This is a test !")
         self.assertEqual(
@@ -638,7 +638,7 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
     @require_onnxruntime
     def test_small_model_pt_onnx(self):
         model_name = "hf-internal-testing/tiny-bert-for-token-classification"
-        token_classifier = pipeline(task="token-classification", model=model_name, framework="pt", onnx=True)
+        token_classifier = pipeline(task="token-classification", model=model_name, framework="pt", use_onnx=True)
         outputs = token_classifier("This is a test !")
         self.assertEqual(
             nested_simplify(outputs),
@@ -649,7 +649,7 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
         )
 
         token_classifier = pipeline(
-            task="token-classification", model=model_name, framework="pt", onnx=True, ignore_labels=["O", "I-MISC"]
+            task="token-classification", model=model_name, framework="pt", use_onnx=True, ignore_labels=["O", "I-MISC"]
         )
         outputs = token_classifier("This is a test !")
         self.assertEqual(
@@ -674,8 +674,8 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
     @require_onnxruntime
     def test_small_model_pt_onnx_quantized(self):
         model_name = "hf-internal-testing/tiny-bert-for-token-classification"
-        token_classifier = pipeline(task="token-classification", model=model_name, framework="pt", onnx=True,
-                                    quantized=True)
+        token_classifier = pipeline(task="token-classification", model=model_name, framework="pt", use_onnx=True,
+                                    optimize=True)
         outputs = token_classifier("This is a test !")
         self.assertEqual(
             nested_simplify(outputs),
@@ -686,7 +686,7 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
         )
 
         token_classifier = pipeline(
-            task="token-classification", model=model_name, framework="pt", onnx=True, quantized=True, ignore_labels=["O", "I-MISC"]
+            task="token-classification", model=model_name, framework="pt", use_onnx=True, optimize=True, ignore_labels=["O", "I-MISC"]
         )
         outputs = token_classifier("This is a test !")
         self.assertEqual(
