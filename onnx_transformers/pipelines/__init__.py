@@ -142,7 +142,7 @@ SUPPORTED_TASKS = {
         "type": "text",
         "feature": "sequence-classification",
         "example": {
-            "inputs": "Hello, I am Bert from ONNX Transformers."
+            "inputs": "My name is Clara and I live in Berkeley, California."
         },
     },
     "feature-extraction": {

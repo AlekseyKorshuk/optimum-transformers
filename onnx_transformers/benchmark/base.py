@@ -56,7 +56,7 @@ class Benchmark:
     def run_benchmark(self, num_tests: int, model_input: dict):
         results = {}
         for label, pipeline_args in PIPELINES:
-            pipeline_ = pipeline(self.task, self.model, **pipeline_args)
+            pipeline_ = pipeline(self.task, self.model, *pipeline_args)
             # Compute
             time_buffer = []
 
