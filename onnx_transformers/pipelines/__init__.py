@@ -141,6 +141,9 @@ SUPPORTED_TASKS = {
         },
         "type": "text",
         "feature": "sequence-classification",
+        "example": {
+            "inputs": "Hello, I am Bert from ONNX Transformers."
+        },
     },
     "feature-extraction": {
         "impl": FeatureExtractionPipeline,
@@ -149,6 +152,9 @@ SUPPORTED_TASKS = {
         "default": {"model": {"pt": "distilbert-base-cased", "tf": "distilbert-base-cased"}},
         "type": "multimodal",
         "feature": "default",
+        "example": {
+            "inputs": "Hello, I am Bert from ONNX Transformers."
+        },
     },
     "question-answering": {
         "impl": QuestionAnsweringPipeline,
@@ -159,6 +165,10 @@ SUPPORTED_TASKS = {
         },
         "type": "text",
         "feature": "question-answering",
+        "example": {
+            "question": "Where was HuggingFace founded ?",
+            "context": "HuggingFace was founded in Paris.",
+        },
     },
     "token-classification": {
         "impl": TokenClassificationPipeline,
@@ -172,6 +182,9 @@ SUPPORTED_TASKS = {
         },
         "type": "text",
         "feature": "token-classification",
+        "example": {
+            "inputs": "Hello, I am Bert from ONNX Transformers."
+        },
     },
     "zero-shot-classification": {
         "impl": ZeroShotClassificationPipeline,
@@ -184,6 +197,10 @@ SUPPORTED_TASKS = {
         },
         "type": "text",
         "feature": "sequence-classification",
+        "example": {
+            "sequences": "Who are you voting for in 2020?",
+            "candidate_labels": ["politics", "public health", "science"],
+        },
     },
     "fill-mask": {
         "impl": FillMaskPipeline,
@@ -192,6 +209,9 @@ SUPPORTED_TASKS = {
         "default": {"model": {"pt": "distilroberta-base", "tf": "distilroberta-base"}},
         "type": "text",
         "feature": "masked-lm",
+        "example": {
+            "inputs": "HuggingFace is creating a [MASK] that the community uses to solve NLP tasks."
+        },
     },
 }
 

@@ -4,23 +4,27 @@ __version__ = "0.1.0"
 from onnx_transformers.pipelines import (
     CsvPipelineDataFormat,
     JsonPipelineDataFormat,
-    # NerPipeline,
+    NerPipeline,
     PipedPipelineDataFormat,
     Pipeline,
     PipelineDataFormat,
-    # QuestionAnsweringPipeline,
+    QuestionAnsweringPipeline,
     TextClassificationPipeline,
-    # TokenClassificationPipeline,
-    # ZeroShotClassificationPipeline,
+    TokenClassificationPipeline,
+    ZeroShotClassificationPipeline,
     pipeline,
-    # QuestionAnsweringArgumentHandler,
+    QuestionAnsweringArgumentHandler,
     ArgumentHandler,
-    # DefaultArgumentHandler,
-    # ZeroShotClassificationArgumentHandler
+    ZeroShotClassificationArgumentHandler
 )
 
-# Pipelines
+# Utils
 from onnx_transformers.utils import (
     is_onnxruntime_available,
     require_onnxruntime
+)
+
+# Benchmark
+from onnx_transformers.benchmark import (
+    Benchmark,
 )
