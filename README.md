@@ -119,7 +119,7 @@ me: [link](https://github.com/AlekseyKorshuk)
 
 Star this repository:
 
-[![GitHub stars](https://img.shields.io/github/stars/AlekseyKorshuk/onnx_transformers?style=social)](https://github.com/AlekseyKorshuk/huggingartists)
+[![GitHub stars](https://img.shields.io/github/stars/AlekseyKorshuk/optimum-transformers?style=social)](https://github.com/AlekseyKorshuk/optimum-transformers)
 
 ## Resources
 
