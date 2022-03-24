@@ -390,6 +390,16 @@ def pipeline(
         model_kwargs:
             Additional dictionary of keyword arguments passed along to the model's `from_pretrained(...,
             **model_kwargs)` function.
+        pipeline_class (`Any`):
+            The pipeline that will be used.
+            If not provided, the default for the `task` will be loaded.
+        use_onnx (`bool`, *optional*, defaults to `True`):
+            Whether or not to use ONNX graph instead of Pytorch. ONNX will be loaded from cache if possible. Otherwise,
+            graph will be exported.
+        optimize (`bool`, *optional*, defaults to `False`):
+            Whether or not to optimize ONNX graph. ORTConfig will be used.
+        ort_config (`ORTConfig`, *optional*, defaults to `None`):
+            ORTConfig will be used to optimize ONNX graph if `optimize` set to `True`.
         kwargs:
             Additional keyword arguments passed along to the specific pipeline init (see the documentation for the
             corresponding pipeline class for possible values).
