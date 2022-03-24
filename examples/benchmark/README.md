@@ -1,6 +1,13 @@
 # Benchmarking optimized transformer pipeline
 
 ## How to run
+
+### With notebook
+
+You can benchmark pipelines easier with [benchmark_pipelines](./notebooks/benchmark_pipelines.ipynb) notebook.
+
+### With own script
+
 ```python
 from onnx_transformers import Benchmark
 
@@ -13,4 +20,7 @@ results = benchmark(num_tests, plot=True)
 ```
 
 ## Result
+
+This is as example plot from the benchmark:
+
 ![Resulting plot](result.jpg "Resulting plot")

@@ -1,4 +1,4 @@
 # Examples
 
-* [Pipelines](./pipelines/README.md)
+* [Pipelines](./pipelines)
 * [Benchmark](./benchmark)
