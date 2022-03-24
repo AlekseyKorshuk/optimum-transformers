@@ -11,6 +11,10 @@ Accelerated NLP pipelines for fast inference ðŸš€ on CPU and GPU. Built with ðŸ¤
 ```bash
 pip install git+https://github.com/AlekseyKorshuk/optimum-transformers
 ```
+Or with PyPI:
+```bash
+pip install optimum-transformers
+```
 
 ## Usage:
 
