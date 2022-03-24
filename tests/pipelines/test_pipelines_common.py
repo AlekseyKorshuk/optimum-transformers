@@ -5,8 +5,8 @@ import random
 import string
 import unittest
 from abc import abstractmethod
-from functools import lru_cache
 from unittest import skipIf
+from functools import lru_cache
 
 from transformers import (
     FEATURE_EXTRACTOR_MAPPING,
@@ -22,7 +22,6 @@ from transformers import (
 from transformers.pipelines import get_task
 from transformers.pipelines.base import _pad
 from transformers.testing_utils import is_pipeline_test, nested_simplify, require_tf, require_torch
-
 
 logger = logging.getLogger(__name__)
 
@@ -153,8 +152,8 @@ class PipelineTestCaseMeta(type):
                         if isinstance(model.config, (RobertaConfig, IBertConfig)):
                             tokenizer.model_max_length = model.config.max_position_embeddings - 2
                         elif (
-                            hasattr(model.config, "max_position_embeddings")
-                            and model.config.max_position_embeddings > 0
+                                hasattr(model.config, "max_position_embeddings")
+                                and model.config.max_position_embeddings > 0
                         ):
                             tokenizer.model_max_length = model.config.max_position_embeddings
                     # Rust Panic exception are NOT Exception subclass
