@@ -1,6 +1,6 @@
 # Utils
 
-from .testing_utils import (
+from .testing import (
     is_onnxruntime_available,
     require_onnxruntime
 )

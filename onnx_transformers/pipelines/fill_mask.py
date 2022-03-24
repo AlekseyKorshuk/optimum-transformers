@@ -72,6 +72,7 @@ class FillMaskPipeline(Pipeline):
     def preprocess(self, inputs, return_tensors=None, **preprocess_parameters) -> Dict[str, GenericTensor]:
         if return_tensors is None:
             return_tensors = self.framework
+        inputs = inputs.replace("[MASK]", self.tokenizer.mask_token)
         model_inputs = self.tokenizer(inputs, return_tensors=return_tensors)
         self.ensure_exactly_one_mask_token(model_inputs)
         return model_inputs

@@ -23,7 +23,7 @@ from onnx_transformers import pipeline
 
 # Initialize a pipeline by passing the task name and 
 # set onnx to True (default value is also True)
->>> nlp = pipeline("sentiment-analysis", onnx=True)
+>>> nlp = pipeline("sentiment-analysis", use_onnx=True)
 >>> nlp("Transformers and onnx runtime is an awesome combo!")
 [{'label': 'POSITIVE', 'score': 0.999721109867096}]  
 ```
@@ -33,7 +33,7 @@ Or provide a different model using the `model` argument.
 ```python
 from onnx_transformers import pipeline
 
->>> nlp = pipeline("question-answering", model="deepset/roberta-base-squad2", onnx=True)
+>>> nlp = pipeline("question-answering", model="deepset/roberta-base-squad2", use_onnx=True)
 >>> nlp({
   "question": "What is ONNX Runtime ?", 
   "context": "ONNX Runtime is a highly performant single inference engine for multiple platforms and hardware"
@@ -44,13 +44,13 @@ from onnx_transformers import pipeline
 ```python
 from onnx_transformers import pipeline
 
->>> nlp = pipeline("ner", model="mys/electra-base-turkish-cased-ner", onnx=True, quantized=True, grouped_entities=True)
+>>> nlp = pipeline("ner", model="mys/electra-base-turkish-cased-ner", use_onnx=True, optimize=True, grouped_entities=True)
 >>> nlp("adana kebap ülkemizin önemli lezzetlerinden biridir.")
 [{'entity_group': 'B-food', 'score': 0.869149774312973, 'word': 'adana kebap'}]
 ```
 
 Set `onnx` to `False` for standard torch inference.
-Set `quantized` to `True` for quantize with Onnx. ( set `onnx` to True)
+Set `optimized` to `True` for quantize with ONNX. ( set `use_onnx` to True)
 
 You can create `Pipeline` objects for the following down-stream tasks:
 

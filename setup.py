@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-from os import path
 
 with open("README.md", encoding="utf-8") as f:
     long_description = f.read()
@@ -7,10 +6,8 @@ with open("README.md", encoding="utf-8") as f:
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
-
-extras = {}
-extras["testing"] = ["pytest", "pytest-xdist", "timeout-decorator", "psutil"]
-extras["quality"] = ["black >= 20.8b1", "isort >= 5", "flake8"]
+extras = {"testing": ["pytest", "pytest-xdist", "timeout-decorator", "psutil"],
+          "quality": ["black >= 20.8b1", "isort >= 5", "flake8"]}
 extras["dev"] = extras["testing"] + extras["quality"]
 
 setup(
@@ -22,7 +19,7 @@ setup(
     author="Suraj Patil",
     author_email="surajp815@gmail.com",
     packages=find_packages(),
-    keywords =["ONNX", "onnxruntime", "NLP", "transformer", "transformers", "inference", "fast inference",],
+    keywords=["ONNX", "onnxruntime", "NLP", "transformer", "transformers", "inference", "fast inference", ],
     license="Apache",
     url="https://github.com/patil-suraj/onnx_transformers",
     install_requires=requirements,
