@@ -697,16 +697,15 @@ if is_torch_available():
     )
 
 
-def create_model_for_provider(model_path: str, provider: str) -> InferenceSession:
-    assert provider in get_all_providers(), f"provider {provider} not found, {get_all_providers()}"
-    print(f"Creating model for provider: {model_path}")
+def create_model_for_providers(model_path: str) -> InferenceSession:
+    logger.info(f"Creating model for providers: {model_path}")
     # Few properties that might have an impact on performances (provided by MS)
     options = SessionOptions()
     options.intra_op_num_threads = 1
     options.graph_optimization_level = GraphOptimizationLevel.ORT_ENABLE_ALL
 
     # Load the model as a graph and prepare the CPU backend
-    session = InferenceSession(str(model_path), options, providers=[provider])
+    session = InferenceSession(str(model_path), options, providers=get_all_providers())
     session.disable_fallback()
 
     return session
@@ -780,15 +779,11 @@ class Pipeline(_ScikitCompat):
         self._preprocess_params, self._forward_params, self._postprocess_params = self._sanitize_parameters(**kwargs)
 
         if use_onnx:
-            # input_names_path = graph_path.parent.joinpath(f"{os.path.basename(graph_path)}.input_names.json")
             if not graph_path.exists():
                 self._export_onnx_graph()
 
-            logger.info(f"loading onnx graph from {self.graph_path.as_posix()}")
-            # if not quantized:
-            #     self.onnx_model = create_model_for_provider(str(graph_path),
-            #                                                 "CPUExecutionProvider")
-            # self.input_names = json.load(open(input_names_path))
+            logger.info(f"Loading onnx graph from {self.graph_path.as_posix()}")
+
             self.framework = "pt"
             if optimize:
                 onnx_opt_model_path = graph_path.parent.joinpath(
@@ -799,32 +794,15 @@ class Pipeline(_ScikitCompat):
                     self._create_quantized_graph()
                 self.graph_path = quantized_model_path
 
-            self.onnx_model = create_model_for_provider(self.graph_path.as_posix(),
-                                                        "CPUExecutionProvider")
+            self.onnx_model = create_model_for_providers(self.graph_path.as_posix())
             self._warmup_onnx_graph()
 
     def _create_quantized_graph(self):
-        print(f"Creating quantized graph from {self.graph_path.as_posix()}")
+        logger.info(f"Creating quantized graph from {self.graph_path.as_posix()}")
         self.quantizer.fit(self.model.config.name_or_path, output_dir=str(self.graph_path.parent.as_posix()),
                            feature=self.feature)
-        # opt_options = FusionOptions('bert')
-        # opt_options.enable_gelu_approximation = True
-        # opt_options.enable_embed_layer_norm = False
-        # onnx_opt_model = optimizer.optimize_model(self.graph_path.as_posix(),
-        #                                           'bert_tf' if self.framework == "tf" else "bert",
-        #                                           num_heads=self.model.config.num_attention_heads,
-        #                                           hidden_size=self.model.config.hidden_size,
-        #                                           optimization_options=opt_options,
-        #                                           use_gpu=use_gpu)
-        # if float16:
-        #     onnx_opt_model.convert_float_to_float16()
-        #
-        # onnx_opt_model.save_model_to_file(onnx_opt_model_path.as_posix())
-        # quantize_dynamic(onnx_opt_model_path.as_posix(), quantized_model_path.as_posix(), weight_type=QuantType.QInt8)
-        # quantized_model_path = quantize(onnx_opt_model_path)
 
     def _forward_onnx(self, inputs, return_tensors=False):
-        # inputs_onnx = {k: v.cpu().detach().numpy() for k, v in inputs.items() if k in self.input_names}
         inputs_onnx = {k: v.cpu().detach().numpy() for k, v in inputs.items()}
         predictions = self.onnx_model.run(None, inputs_onnx)
         return predictions
@@ -839,8 +817,6 @@ class Pipeline(_ScikitCompat):
         # so delete old graph
         if self.graph_path.exists():
             self.graph_path.unlink()
-        # if input_names_path.exists():
-        #     input_names_path.unlink()
 
         # create parent dir
         if not self.graph_path.parent.exists():
@@ -850,14 +826,6 @@ class Pipeline(_ScikitCompat):
 
         self.quantizer.export(self.model.config.name_or_path, output_path=self.graph_path,
                               feature=self.feature)
-        # convert(framework=self.framework, model=self.model, tokenizer=self.tokenizer, opset=12,
-        #         output=self.graph_path, use_external_format=False,
-        #         pipeline_name=self.task, verbose=False)
-
-        # save input names
-        # self.input_names = infer_shapes(self, "pt")[0]
-        # with open(input_names_path, "w") as f:
-        #     json.dump(self.input_names, f)
 
     def save_pretrained(self, save_directory: str):
         """
