@@ -17,8 +17,8 @@ from transformers.testing_utils import (
     require_torch_gpu,
     slow,
 )
-from onnx_transformers.pipelines import TokenClassificationPipeline, pipeline
-from onnx_transformers.utils import require_onnxruntime
+from optimum_transformers.pipelines import TokenClassificationPipeline, pipeline
+from optimum_transformers.utils import require_onnxruntime
 
 from .test_pipelines_common import ANY, PipelineTestCaseMeta
 

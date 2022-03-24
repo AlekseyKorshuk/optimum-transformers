@@ -9,7 +9,7 @@ You can benchmark pipelines easier with [benchmark_pipelines](./notebooks/benchm
 ### With own script
 
 ```python
-from onnx_transformers import Benchmark
+from optimum_transformers import Benchmark
 
 task = "sentiment-analysis"
 model_name = "philschmid/MiniLM-L6-H384-uncased-sst2"

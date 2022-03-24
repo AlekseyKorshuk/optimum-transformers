@@ -10,7 +10,7 @@ the complex code from the library, offering a simple API dedicated to several ta
 The usage is exactly the same as original pipelines, except minor improves:
 
 ```python
-from onnx_transformers import pipeline
+from optimum_transformers import pipeline
 
 pipe = pipeline("text-classification", use_onnx=True, optimize=True)
 pipe("This restaurant is awesome")
@@ -25,7 +25,7 @@ pipe("This restaurant is awesome")
 Read [Optimum](https://huggingface.co/docs/optimum/index) documentation for more details
 
 ```python
-from onnx_transformers import pipeline
+from optimum_transformers import pipeline
 from optimum.onnxruntime import ORTConfig
 
 ort_config = ORTConfig(quantization_approach="dynamic")

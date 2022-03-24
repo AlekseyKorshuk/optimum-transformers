@@ -11,7 +11,7 @@ extras = {"testing": ["pytest", "pytest-xdist", "timeout-decorator", "psutil"],
 extras["dev"] = extras["testing"] + extras["quality"]
 
 setup(
-    name="onnx_transformers",
+    name="optimum_transformers",
     version="0.1.0",
     description="Accelerated nlp pipelines using Transformers, Optimum and ONNX Runtime",
     long_description=long_description,
@@ -22,7 +22,7 @@ setup(
     keywords=["ONNX", "onnxruntime", "NLP", "transformer", "transformers", "inference", "fast inference", "Optimum",
               "infinity"],
     license="Apache",
-    url="https://github.com/AlekseyKorshuk/onnx_transformers",
+    url="https://github.com/AlekseyKorshuk/optimum-transformers",
     install_requires=requirements,
     extras_require=extras,
     python_requires=">=3.6.0",
@@ -37,7 +37,7 @@ setup(
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
     project_urls={
-        'Documentation': "https://github.com/AlekseyKorshuk/onnx_transformers",
-        'Source': "https://github.com/AlekseyKorshuk/onnx_transformers",
+        'Documentation': "https://github.com/AlekseyKorshuk/optimum-transformers",
+        'Source': "https://github.com/AlekseyKorshuk/optimum-transformers",
     },
 )

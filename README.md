@@ -7,7 +7,7 @@ Accelerated NLP pipelines for fast inference ðŸš€ on CPU and GPU. Built with ðŸ¤
 ## Installation:
 
 ```bash
-pip install git+https://github.com/AlekseyKorshuk/onnx_transformers
+pip install git+https://github.com/AlekseyKorshuk/optimum-transformers
 ```
 
 ## Usage:
@@ -19,7 +19,7 @@ Just provide the path/url to the model, and it'll download the model if needed f
 the [hub](https://huggingface.co/models) and automatically create onnx graph and run inference.
 
 ```python
-from onnx_transformers import pipeline
+from optimum_transformers import pipeline
 
 # Initialize a pipeline by passing the task name and 
 # set onnx to True (default value is also True)
@@ -31,7 +31,7 @@ from onnx_transformers import pipeline
 Or provide a different model using the `model` argument.
 
 ```python
-from onnx_transformers import pipeline
+from optimum_transformers import pipeline
 
 >> > nlp = pipeline("question-answering", model="deepset/roberta-base-squad2", use_onnx=True)
 >> > nlp(question="What is ONNX Runtime ?",
@@ -41,7 +41,7 @@ from onnx_transformers import pipeline
 ```
 
 ```python
-from onnx_transformers import pipeline
+from optimum_transformers import pipeline
 
 >> > nlp = pipeline("ner", model="mys/electra-base-turkish-cased-ner", use_onnx=True, optimize=True,
                     grouped_entities=True)

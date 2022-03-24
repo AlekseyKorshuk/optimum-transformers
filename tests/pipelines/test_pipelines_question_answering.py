@@ -7,9 +7,9 @@ from transformers import (
     QuestionAnsweringPipeline,
 )
 from transformers.data.processors.squad import SquadExample
-from onnx_transformers.pipelines import QuestionAnsweringArgumentHandler, pipeline
+from optimum_transformers.pipelines import QuestionAnsweringArgumentHandler, pipeline
 from transformers.testing_utils import is_pipeline_test, nested_simplify, require_tf, require_torch, slow
-from onnx_transformers.utils import require_onnxruntime
+from optimum_transformers.utils import require_onnxruntime
 
 from .test_pipelines_common import ANY, PipelineTestCaseMeta
 

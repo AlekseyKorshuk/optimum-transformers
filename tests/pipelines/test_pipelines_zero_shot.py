@@ -5,13 +5,13 @@ from transformers import (
     TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING,
 )
 
-from onnx_transformers import (
+from optimum_transformers import (
     Pipeline,
     ZeroShotClassificationPipeline,
     pipeline,
 )
 from transformers.testing_utils import nested_simplify, require_tf, require_torch, slow
-from onnx_transformers.utils import require_onnxruntime
+from optimum_transformers.utils import require_onnxruntime
 
 from .test_pipelines_common import ANY, PipelineTestCaseMeta
 
