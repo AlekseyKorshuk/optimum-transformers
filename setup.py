@@ -3,8 +3,14 @@ from setuptools import setup, find_packages
 with open("README.md", encoding="utf-8") as f:
     long_description = f.read()
 
-with open('requirements.txt') as f:
-    requirements = f.read().splitlines()
+requirements = ["transformers",
+                "onnxruntime",
+                "psutil",
+                "coloredlogs",
+                "onnx",
+                "optimum",
+                "datasets"
+                ]
 
 extras = {"testing": ["pytest", "pytest-xdist", "timeout-decorator", "psutil"],
           "quality": ["black >= 20.8b1", "isort >= 5", "flake8"]}
