@@ -4,6 +4,8 @@
 
 Accelerated NLP pipelines for fast inference 🚀 on CPU and GPU. Built with 🤗Transformers, Optimum and ONNX runtime.
 
+> One of the aims of this project is to show myself to get into [Hugging Face](https://huggingface.co) team 🤗
+
 ## Installation:
 
 ```bash
