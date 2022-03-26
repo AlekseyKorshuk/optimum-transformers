@@ -1,6 +1,6 @@
 # Optimum Transformers
 
-![onnx_transformers](./data/social_preview.jpeg?raw=True)
+![onnx_transformers](./data/social_preview.png?raw=True)
 
 Accelerated NLP pipelines for fast inference 🚀 on CPU and GPU. Built with 🤗Transformers, Optimum and ONNX runtime.
 

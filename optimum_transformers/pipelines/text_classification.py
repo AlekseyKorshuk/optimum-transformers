@@ -114,7 +114,7 @@ class TextClassificationPipeline(Pipeline):
             If `self.return_all_scores=True`, one such dictionary is returned per label.
         """
         result = super().__call__(*args, **kwargs)
-        if isinstance(args[0], str):
+        if (len(args) != 0 and isinstance(args[0], str)) or ("inputs" in kwargs and isinstance(kwargs["inputs"], str)):
             # This pipeline is odd, and return a list when single item is run
             return [result]
         else:

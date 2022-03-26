@@ -743,6 +743,7 @@ class Pipeline(_ScikitCompat):
             optimize: bool = False,
             ort_config: Optional[ORTConfig] = None,
             feature: str = "default",
+            example: dict = None,
             **kwargs,
     ):
 
@@ -756,6 +757,7 @@ class Pipeline(_ScikitCompat):
         self.onnx_model = None
         self.task = task
         self.model = model
+        self.example = example
         self.tokenizer = tokenizer
         self.feature_extractor = feature_extractor
         self.modelcard = modelcard
@@ -795,7 +797,7 @@ class Pipeline(_ScikitCompat):
                 self.graph_path = quantized_model_path
 
             self.onnx_model = create_model_for_providers(self.graph_path.as_posix())
-            self._warmup_onnx_graph()
+            # self._warmup_onnx_graph()
 
     def _create_quantized_graph(self):
         logger.info(f"Creating quantized graph from {self.graph_path.as_posix()}")
@@ -807,10 +809,9 @@ class Pipeline(_ScikitCompat):
         predictions = self.onnx_model.run(None, inputs_onnx)
         return predictions
 
-    def _warmup_onnx_graph(self, n=100):
-        model_inputs = self.tokenizer("My name is Bert", return_tensors="pt")
+    def _warmup_onnx_graph(self, n=10):
         for _ in range(n):
-            self._forward_onnx(model_inputs)
+            self.__call__(**self.example)
 
     def _export_onnx_graph(self):
         # if graph exists, but we are here then it means something went wrong in previous load

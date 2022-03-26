@@ -57,7 +57,7 @@ from .question_answering import QuestionAnsweringArgumentHandler, QuestionAnswer
 # from .table_question_answering import TableQuestionAnsweringArgumentHandler, TableQuestionAnsweringPipeline
 # from .text2text_generation import SummarizationPipeline, Text2TextGenerationPipeline, TranslationPipeline
 from .text_classification import TextClassificationPipeline
-# from .text_generation import TextGenerationPipeline
+from .text_generation import TextGenerationPipeline
 from .token_classification import (
     AggregationStrategy,
     NerPipeline,
@@ -211,6 +211,17 @@ SUPPORTED_TASKS = {
         "feature": "masked-lm",
         "example": {
             "inputs": "HuggingFace is creating a [MASK] that the community uses to solve NLP tasks."
+        },
+    },
+    "text-generation": {
+        "impl": TextGenerationPipeline,
+        "tf": (TFAutoModelForCausalLM,) if is_tf_available() else (),
+        "pt": (AutoModelForCausalLM,) if is_torch_available() else (),
+        "default": {"model": {"pt": "gpt2", "tf": "gpt2"}},
+        "type": "text",
+        "feature": "causal-lm",
+        "example": {
+            "text_inputs": "HuggingFace is creating a tool that the community uses to solve NLP tasks."
         },
     },
 }
@@ -604,5 +615,6 @@ def pipeline(
         optimize=optimize,
         ort_config=ort_config,
         feature=targeted_task["feature"],
+        example=targeted_task["example"],
         **kwargs
     )
