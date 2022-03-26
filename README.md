@@ -64,6 +64,7 @@ You can create `Pipeline` objects for the following down-stream tasks:
 - `zero-shot-classification`: Classifies sequences according to a given number of classes directly in runtime.
 - `fill-mask`: The task of masking tokens in a sequence with a masking token, and prompting the model to fill that mask
   with an appropriate token.
+- `text-generation`: The task of generating text according to the previous text provided.
 
 Calling the pipeline for the first time loads the model, creates the onnx graph, and caches it for future use. Due to
 this, the first load will take some time. Subsequent calls to the same model will load the onnx graph automatically from
