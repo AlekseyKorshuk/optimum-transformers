@@ -52,6 +52,8 @@ nlp("adana kebap ülkemizin önemli lezzetlerinden biridir.")
 Set `use_onnx` to `False` for standard torch inference. Set `optimize` to `True` for quantize with ONNX. ( set `use_onnx` to
 True)
 
+## Supported pipelines
+
 You can create `Pipeline` objects for the following down-stream tasks:
 
 - `feature-extraction`: Generates a tensor representation for the input sequence
