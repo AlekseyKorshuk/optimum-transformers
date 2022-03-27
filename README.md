@@ -1,6 +1,6 @@
 # Optimum Transformers
 
-![optimum-transformers](./data/social_preview.png?raw=True)
+![optimum-transformers](https://raw.githubusercontent.com/AlekseyKorshuk/optimum-transformers/master/data/social_preview.png?raw=True)
 
 Accelerated NLP pipelines for fast inference 🚀 on CPU and GPU. Built with 🤗Transformers, Optimum and ONNX runtime.
 
@@ -87,25 +87,25 @@ For detailed benchmarks and other information refer to this blog post and notebo
 
 **Benchmark `sentiment-analysis` pipeline**
 
-![](./data/sentiment_analysis_benchmark.jpg)
+![](https://raw.githubusercontent.com/AlekseyKorshuk/optimum-transformers/master/data/sentiment_analysis_benchmark.jpg)
 
 **Benchmark `zero-shot-classification` pipeline**
 
-![](./data/zero_shot_classification_benchmark.jpg)
+![](https://raw.githubusercontent.com/AlekseyKorshuk/optimum-transformers/master/data/zero_shot_classification_benchmark.jpg)
 
 **Benchmark `token-classification` pipeline**
 
-![](./data/token_classification_benchmark.jpg)
+![](https://raw.githubusercontent.com/AlekseyKorshuk/optimum-transformers/master/data/token_classification_benchmark.jpg)
 
-![](./data/token_classification_benchmark2.jpg)
+![](https://raw.githubusercontent.com/AlekseyKorshuk/optimum-transformers/master/data/token_classification_benchmark2.jpg)
 
 **Benchmark `question-answering` pipeline**
 
-![](./data/question_answering_benchmark.jpg)
+![](https://raw.githubusercontent.com/AlekseyKorshuk/optimum-transformers/master/data/question_answering_benchmark.jpg)
 
 **Benchmark `fill-mask` pipeline**
 
-![](./data/fill_mask_benchmark.jpg)
+![](https://raw.githubusercontent.com/AlekseyKorshuk/optimum-transformers/master/data/fill_mask_benchmark.jpg)
 
 ## About
 
