@@ -23,7 +23,7 @@ class OptimumTextGenerationPipeline(TextGenerationPipeline):
         else:
             in_b = input_ids.shape[0]
         prompt_text = model_inputs.pop("prompt_text")
-        generation_matrix = GenerationMixin(self.model, self.onnx_model, True)
+        generation_matrix = GenerationMixin(self.model, self.onnx_model)
         generated_sequence = generation_matrix.generate(input_ids=input_ids, **generate_kwargs)  # BS x SL
         out_b = generated_sequence.shape[0]
         if self.framework == "pt":

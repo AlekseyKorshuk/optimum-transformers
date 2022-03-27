@@ -381,10 +381,10 @@ class GenerationMixin:
     """
     A class containing all of the functions supporting generation, to be used as a mixin in [`PreTrainedModel`].
     """
-    def __init__(self, model, onnx_model, use_onnx):
+    def __init__(self, model, onnx_model):
         self.model = model
         self.onnx_model = onnx_model
-        self.use_onnx = use_onnx
+        self.use_onnx = True
 
     def _prepare_model_inputs(
         self,
@@ -1050,7 +1050,6 @@ class GenerationMixin:
         >>> outputs = model.generate(input_ids=input_ids, max_length=20, do_sample=True, bad_words_ids=bad_words_ids)
         >>> print("Generated:", tokenizer.decode(outputs[0], skip_special_tokens=True))
         ```"""
-        print("I am here!")
         # 1. Set generation parameters if not already defined
         bos_token_id = bos_token_id if bos_token_id is not None else self.model.config.bos_token_id
         num_beams = num_beams if num_beams is not None else self.model.config.num_beams
