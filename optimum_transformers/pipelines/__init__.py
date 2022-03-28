@@ -59,13 +59,8 @@ from .question_answering import OptimumQuestionAnsweringPipeline
 from .text2text_generation import OptimumText2TextGenerationPipeline
 from .text_classification import OptimumTextClassificationPipeline
 from .text_generation import OptimumTextGenerationPipeline
-from .token_classification import (
-    AggregationStrategy,
-    NerPipeline,
-    TokenClassificationArgumentHandler,
-    TokenClassificationPipeline,
-)
-from .zero_shot_classification import ZeroShotClassificationArgumentHandler, ZeroShotClassificationPipeline
+from .token_classification import OptimumTokenClassificationPipeline
+from .zero_shot_classification import OptimumZeroShotClassificationPipeline
 
 # from .zero_shot_image_classification import ZeroShotImageClassificationPipeline
 
@@ -131,7 +126,7 @@ TASK_ALIASES = {
 }
 SUPPORTED_TASKS = {
     "text-classification": {
-        "impl": TextClassificationPipeline,
+        "impl": OptimumTextClassificationPipeline,
         "tf": (TFAutoModelForSequenceClassification,) if is_tf_available() else (),
         "pt": (AutoModelForSequenceClassification,) if is_torch_available() else (),
         "default": {
@@ -147,7 +142,7 @@ SUPPORTED_TASKS = {
         },
     },
     "feature-extraction": {
-        "impl": FeatureExtractionPipeline,
+        "impl": OptimumFeatureExtractionPipeline,
         "tf": (TFAutoModel,) if is_tf_available() else (),
         "pt": (AutoModel,) if is_torch_available() else (),
         "default": {"model": {"pt": "distilbert-base-cased", "tf": "distilbert-base-cased"}},
@@ -158,7 +153,7 @@ SUPPORTED_TASKS = {
         },
     },
     "question-answering": {
-        "impl": QuestionAnsweringPipeline,
+        "impl": OptimumQuestionAnsweringPipeline,
         "tf": (TFAutoModelForQuestionAnswering,) if is_tf_available() else (),
         "pt": (AutoModelForQuestionAnswering,) if is_torch_available() else (),
         "default": {
@@ -172,7 +167,7 @@ SUPPORTED_TASKS = {
         },
     },
     "token-classification": {
-        "impl": TokenClassificationPipeline,
+        "impl": OptimumTokenClassificationPipeline,
         "tf": (TFAutoModelForTokenClassification,) if is_tf_available() else (),
         "pt": (AutoModelForTokenClassification,) if is_torch_available() else (),
         "default": {
@@ -188,7 +183,7 @@ SUPPORTED_TASKS = {
         },
     },
     "zero-shot-classification": {
-        "impl": ZeroShotClassificationPipeline,
+        "impl": OptimumZeroShotClassificationPipeline,
         "tf": (TFAutoModelForSequenceClassification,) if is_tf_available() else (),
         "pt": (AutoModelForSequenceClassification,) if is_torch_available() else (),
         "default": {
@@ -204,7 +199,7 @@ SUPPORTED_TASKS = {
         },
     },
     "fill-mask": {
-        "impl": FillMaskPipeline,
+        "impl": OptimumFillMaskPipeline,
         "tf": (TFAutoModelForMaskedLM,) if is_tf_available() else (),
         "pt": (AutoModelForMaskedLM,) if is_torch_available() else (),
         "default": {"model": {"pt": "distilroberta-base", "tf": "distilroberta-base"}},
@@ -215,7 +210,7 @@ SUPPORTED_TASKS = {
         },
     },
     "text-generation": {
-        "impl": TextGenerationPipeline,
+        "impl": OptimumTextGenerationPipeline,
         "tf": (TFAutoModelForCausalLM,) if is_tf_available() else (),
         "pt": (AutoModelForCausalLM,) if is_torch_available() else (),
         "default": {"model": {"pt": "gpt2", "tf": "gpt2"}},
@@ -226,7 +221,7 @@ SUPPORTED_TASKS = {
         },
     },
     "text2text-generation": {
-        "impl": Text2TextGenerationPipeline,
+        "impl": OptimumText2TextGenerationPipeline,
         "tf": (TFAutoModelForSeq2SeqLM) if is_tf_available() else (),
         "pt": (AutoModelForSeq2SeqLM) if is_torch_available() else (),
         "default": {"model": {"pt": "t5-base", "tf": "t5-base"}},
