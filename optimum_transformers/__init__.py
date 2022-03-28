@@ -1,29 +1,30 @@
-__version__ = "0.1.0"
-
 # Pipelines
-from optimum_transformers.pipelines import (
-    # CsvPipelineDataFormat,
-    # JsonPipelineDataFormat,
-    # NerPipeline,
-    # PipedPipelineDataFormat,
-    # Pipeline,
-    # PipelineDataFormat,
-    # OptimumQuestionAnsweringPipeline,
-    # TextClassificationPipeline,
-    # TokenClassificationPipeline,
-    # ZeroShotClassificationPipeline,
+from .pipelines import (
+    CsvPipelineDataFormat,
+    JsonPipelineDataFormat,
+    OptimumNerPipeline,
+    PipedPipelineDataFormat,
+    Pipeline,
+    PipelineDataFormat,
+    OptimumQuestionAnsweringPipeline,
+    OptimumTextClassificationPipeline,
+    OptimumTokenClassificationPipeline,
+    OptimumZeroShotClassificationPipeline,
+    OptimumFillMaskPipeline,
+    OptimumTextGenerationPipeline,
+    OptimumFeatureExtractionPipeline,
     pipeline,
-    # ArgumentHandler,
-    # ZeroShotClassificationArgumentHandler
+    ArgumentHandler,
+    ZeroShotClassificationArgumentHandler
 )
 
 # Utils
-from optimum_transformers.utils import (
+from .utils import (
     is_onnxruntime_available,
     require_onnxruntime
 )
 
 # Benchmark
-from optimum_transformers.benchmark import (
+from .benchmark import (
     Benchmark,
 )
