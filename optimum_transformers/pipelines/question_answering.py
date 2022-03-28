@@ -1,10 +1,7 @@
 from transformers.modeling_outputs import QuestionAnsweringModelOutput
-from transformers.utils import logging
 from .base import _forward_onnx, _warmup_onnx_graph
 from transformers import QuestionAnsweringPipeline
 import torch
-
-logger = logging.get_logger(__name__)
 
 
 class OptimumQuestionAnsweringPipeline(QuestionAnsweringPipeline):

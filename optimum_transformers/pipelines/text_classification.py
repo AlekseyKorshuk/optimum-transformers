@@ -1,8 +1,8 @@
 from transformers.modeling_outputs import SequenceClassifierOutput
-
 from .base import _forward_onnx, _warmup_onnx_graph
 from transformers import TextClassificationPipeline
 import torch
+
 
 class OptimumTextClassificationPipeline(TextClassificationPipeline):
     def __init__(self, *args, onnx_model, example, **kwargs):
