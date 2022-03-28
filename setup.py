@@ -1,10 +1,5 @@
 from setuptools import setup, find_packages
 
-with open("README.md", encoding="utf-8") as f:
-    long_description = f.read()
-
-with open("requirements.txt", encoding="utf-8") as f:
-    requirements = f.read().splitlines()
 
 extras = {"testing": ["pytest", "pytest-xdist", "timeout-decorator", "psutil"],
           "quality": ["black >= 20.8b1", "isort >= 5", "flake8"]}
@@ -14,7 +9,7 @@ setup(
     name="optimum_transformers",
     version="0.1.0",
     description="Accelerated nlp pipelines using Transformers, Optimum and ONNX Runtime",
-    long_description=long_description,
+    long_description=open("README.md", "r", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     author="Aleksey Korshuk",
     author_email="ale-kor02@mail.ru",
@@ -23,7 +18,7 @@ setup(
               "infinity"],
     license="Apache",
     url="https://github.com/AlekseyKorshuk/optimum-transformers",
-    install_requires=requirements,
+    install_requires=open("requirements.txt", "r", encoding="utf-8").read().splitlines(),
     extras_require=extras,
     python_requires=">=3.6.0",
     classifiers=[
