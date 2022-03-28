@@ -48,16 +48,17 @@ from .base import (
     infer_framework_load_model,
 )
 # from .conversational import Conversation, ConversationalPipeline
-from .feature_extraction import FeatureExtractionPipeline
-from .fill_mask import FillMaskPipeline
+from .feature_extraction import OptimumFeatureExtractionPipeline
+from .fill_mask import OptimumFillMaskPipeline
 # from .image_classification import ImageClassificationPipeline
 # from .image_segmentation import ImageSegmentationPipeline
 # from .object_detection import ObjectDetectionPipeline
-from .question_answering import QuestionAnsweringArgumentHandler, QuestionAnsweringPipeline
+from .question_answering import OptimumQuestionAnsweringPipeline
 # from .table_question_answering import TableQuestionAnsweringArgumentHandler, TableQuestionAnsweringPipeline
 # from .text2text_generation import SummarizationPipeline, Text2TextGenerationPipeline, TranslationPipeline
-from .text_classification import TextClassificationPipeline
-from .text_generation import TextGenerationPipeline
+from .text2text_generation import OptimumText2TextGenerationPipeline
+from .text_classification import OptimumTextClassificationPipeline
+from .text_generation import OptimumTextGenerationPipeline
 from .token_classification import (
     AggregationStrategy,
     NerPipeline,
@@ -220,6 +221,17 @@ SUPPORTED_TASKS = {
         "default": {"model": {"pt": "gpt2", "tf": "gpt2"}},
         "type": "text",
         "feature": "causal-lm",
+        "example": {
+            "text_inputs": "HuggingFace is creating a tool that the community uses to solve NLP tasks."
+        },
+    },
+    "text2text-generation": {
+        "impl": Text2TextGenerationPipeline,
+        "tf": (TFAutoModelForSeq2SeqLM) if is_tf_available() else (),
+        "pt": (AutoModelForSeq2SeqLM) if is_torch_available() else (),
+        "default": {"model": {"pt": "t5-base", "tf": "t5-base"}},
+        "type": "text",
+        "feature": "seq2seq-lm",
         "example": {
             "text_inputs": "HuggingFace is creating a tool that the community uses to solve NLP tasks."
         },
