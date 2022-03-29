@@ -2,89 +2,60 @@
 # There's no way to ignore "F401 '...' imported but unused" warnings in this
 # module, but to preserve other warnings. So, don't check this module at all.
 
-import io
-import json
 import os
 
-# coding=utf-8
-# Copyright 2018 The HuggingFace Inc. team.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 import warnings
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Union
+from onnxruntime import GraphOptimizationLevel, InferenceSession, SessionOptions
 
 from transformers.configuration_utils import PretrainedConfig
 from transformers.feature_extraction_utils import PreTrainedFeatureExtractor
-from transformers.file_utils import http_get, is_tf_available, is_torch_available
+from transformers.file_utils import is_tf_available, is_torch_available
 from transformers.models.auto.configuration_auto import AutoConfig
 from transformers.models.auto.feature_extraction_auto import FEATURE_EXTRACTOR_MAPPING, AutoFeatureExtractor
 from transformers.models.auto.tokenization_auto import TOKENIZER_MAPPING, AutoTokenizer
 from transformers.tokenization_utils import PreTrainedTokenizer
 from transformers.utils import logging
+from transformers.pipelines import get_task, check_task
+
+from transformers import pipeline as default_pipeline
 
 from optimum.onnxruntime import ORTConfig, ORTQuantizer
 
-# from .audio_classification import AudioClassificationPipeline
-# from .automatic_speech_recognition import AutomaticSpeechRecognitionPipeline
-from .base import (
-    ArgumentHandler,
-    CsvPipelineDataFormat,
-    JsonPipelineDataFormat,
-    PipedPipelineDataFormat,
+from transformers.pipelines.base import (
     Pipeline,
-    PipelineDataFormat,
-    PipelineException,
     get_default_model,
     infer_framework_load_model,
 )
-# from .conversational import Conversation, ConversationalPipeline
-from .feature_extraction import FeatureExtractionPipeline
-from .fill_mask import FillMaskPipeline
-# from .image_classification import ImageClassificationPipeline
-# from .image_segmentation import ImageSegmentationPipeline
-# from .object_detection import ObjectDetectionPipeline
-from .question_answering import QuestionAnsweringArgumentHandler, QuestionAnsweringPipeline
-# from .table_question_answering import TableQuestionAnsweringArgumentHandler, TableQuestionAnsweringPipeline
-# from .text2text_generation import SummarizationPipeline, Text2TextGenerationPipeline, TranslationPipeline
-from .text_classification import TextClassificationPipeline
-from .text_generation import TextGenerationPipeline
-from .token_classification import (
-    AggregationStrategy,
-    NerPipeline,
-    TokenClassificationArgumentHandler,
-    TokenClassificationPipeline,
+
+from .base import (
+    _warmup_onnx_graph,
+    _forward_onnx,
+    create_model_for_providers,
+    _create_quantized_graph,
+    _export_onnx_graph,
 )
-from .zero_shot_classification import ZeroShotClassificationArgumentHandler, ZeroShotClassificationPipeline
 
-# from .zero_shot_image_classification import ZeroShotImageClassificationPipeline
+from .feature_extraction import OptimumFeatureExtractionPipeline
+from .fill_mask import OptimumFillMaskPipeline
 
+from .question_answering import OptimumQuestionAnsweringPipeline
+from .text_classification import OptimumTextClassificationPipeline
+from .text_generation import OptimumTextGenerationPipeline
+from .token_classification import (
+    OptimumTokenClassificationPipeline,
+)
+from .zero_shot_classification import OptimumZeroShotClassificationPipeline
 
 if is_tf_available():
     import tensorflow as tf
 
     from transformers.models.auto.modeling_tf_auto import (
-        TF_MODEL_FOR_QUESTION_ANSWERING_MAPPING,
-        TF_MODEL_FOR_SEQ_TO_SEQ_CAUSAL_LM_MAPPING,
-        TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING,
-        TF_MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING,
-        TF_MODEL_WITH_LM_HEAD_MAPPING,
         TFAutoModel,
         TFAutoModelForCausalLM,
         TFAutoModelForMaskedLM,
         TFAutoModelForQuestionAnswering,
-        TFAutoModelForSeq2SeqLM,
         TFAutoModelForSequenceClassification,
-        TFAutoModelForTableQuestionAnswering,
         TFAutoModelForTokenClassification,
     )
 
@@ -92,31 +63,13 @@ if is_torch_available():
     import torch
 
     from transformers.models.auto.modeling_auto import (
-        MODEL_FOR_MASKED_LM_MAPPING,
-        MODEL_FOR_QUESTION_ANSWERING_MAPPING,
-        MODEL_FOR_SEQ_TO_SEQ_CAUSAL_LM_MAPPING,
-        MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING,
-        MODEL_FOR_TABLE_QUESTION_ANSWERING_MAPPING,
-        MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING,
         AutoModel,
-        AutoModelForAudioClassification,
         AutoModelForCausalLM,
-        AutoModelForCTC,
-        AutoModelForImageClassification,
-        AutoModelForImageSegmentation,
         AutoModelForMaskedLM,
-        AutoModelForObjectDetection,
         AutoModelForQuestionAnswering,
-        AutoModelForSemanticSegmentation,
-        AutoModelForSeq2SeqLM,
         AutoModelForSequenceClassification,
-        AutoModelForSpeechSeq2Seq,
-        AutoModelForTableQuestionAnswering,
         AutoModelForTokenClassification,
     )
-if TYPE_CHECKING:
-    from transformers.modeling_tf_utils import TFPreTrainedModel
-    from transformers.modeling_utils import PreTrainedModel
 
 from pathlib import Path
 
@@ -130,7 +83,7 @@ TASK_ALIASES = {
 }
 SUPPORTED_TASKS = {
     "text-classification": {
-        "impl": TextClassificationPipeline,
+        "impl": OptimumTextClassificationPipeline,
         "tf": (TFAutoModelForSequenceClassification,) if is_tf_available() else (),
         "pt": (AutoModelForSequenceClassification,) if is_torch_available() else (),
         "default": {
@@ -146,7 +99,7 @@ SUPPORTED_TASKS = {
         },
     },
     "feature-extraction": {
-        "impl": FeatureExtractionPipeline,
+        "impl": OptimumFeatureExtractionPipeline,
         "tf": (TFAutoModel,) if is_tf_available() else (),
         "pt": (AutoModel,) if is_torch_available() else (),
         "default": {"model": {"pt": "distilbert-base-cased", "tf": "distilbert-base-cased"}},
@@ -157,7 +110,7 @@ SUPPORTED_TASKS = {
         },
     },
     "question-answering": {
-        "impl": QuestionAnsweringPipeline,
+        "impl": OptimumQuestionAnsweringPipeline,
         "tf": (TFAutoModelForQuestionAnswering,) if is_tf_available() else (),
         "pt": (AutoModelForQuestionAnswering,) if is_torch_available() else (),
         "default": {
@@ -171,7 +124,7 @@ SUPPORTED_TASKS = {
         },
     },
     "token-classification": {
-        "impl": TokenClassificationPipeline,
+        "impl": OptimumTokenClassificationPipeline,
         "tf": (TFAutoModelForTokenClassification,) if is_tf_available() else (),
         "pt": (AutoModelForTokenClassification,) if is_torch_available() else (),
         "default": {
@@ -183,11 +136,11 @@ SUPPORTED_TASKS = {
         "type": "text",
         "feature": "token-classification",
         "example": {
-            "inputs": "Hello, I am Bert from ONNX Transformers."
+            "inputs": "My name is Wolfgang and I live in Berlin."
         },
     },
     "zero-shot-classification": {
-        "impl": ZeroShotClassificationPipeline,
+        "impl": OptimumZeroShotClassificationPipeline,
         "tf": (TFAutoModelForSequenceClassification,) if is_tf_available() else (),
         "pt": (AutoModelForSequenceClassification,) if is_torch_available() else (),
         "default": {
@@ -203,18 +156,18 @@ SUPPORTED_TASKS = {
         },
     },
     "fill-mask": {
-        "impl": FillMaskPipeline,
+        "impl": OptimumFillMaskPipeline,
         "tf": (TFAutoModelForMaskedLM,) if is_tf_available() else (),
         "pt": (AutoModelForMaskedLM,) if is_torch_available() else (),
         "default": {"model": {"pt": "distilroberta-base", "tf": "distilroberta-base"}},
         "type": "text",
         "feature": "masked-lm",
         "example": {
-            "inputs": "HuggingFace is creating a [MASK] that the community uses to solve NLP tasks."
+            "inputs": "HuggingFace is creating a <mask> that the community uses to solve NLP tasks."
         },
     },
     "text-generation": {
-        "impl": TextGenerationPipeline,
+        "impl": OptimumTextGenerationPipeline,
         "tf": (TFAutoModelForCausalLM,) if is_tf_available() else (),
         "pt": (AutoModelForCausalLM,) if is_torch_available() else (),
         "default": {"model": {"pt": "gpt2", "tf": "gpt2"}},
@@ -235,82 +188,6 @@ for task, values in SUPPORTED_TASKS.items():
         NO_TOKENIZER_TASKS.add(task)
     elif values["type"] != "multimodal":
         raise ValueError(f"SUPPORTED_TASK {task} contains invalid type {values['type']}")
-
-
-def get_supported_tasks() -> List[str]:
-    """
-    Returns a list of supported task strings.
-    """
-    supported_tasks = list(SUPPORTED_TASKS.keys()) + list(TASK_ALIASES.keys())
-    supported_tasks.sort()
-    return supported_tasks
-
-
-def get_task(model: str, use_auth_token: Optional[str] = None) -> str:
-    tmp = io.BytesIO()
-    headers = {}
-    if use_auth_token:
-        headers["Authorization"] = f"Bearer {use_auth_token}"
-
-    try:
-        http_get(f"https://huggingface.co/api/models/{model}", tmp, headers=headers)
-        tmp.seek(0)
-        body = tmp.read()
-        data = json.loads(body)
-    except Exception as e:
-        raise RuntimeError(f"Instantiating a pipeline without a task set raised an error: {e}")
-    if "pipeline_tag" not in data:
-        raise RuntimeError(
-            f"The model {model} does not seem to have a correct `pipeline_tag` set to infer the task automatically"
-        )
-    if data.get("library_name", "transformers") != "transformers":
-        raise RuntimeError(f"This model is meant to be used with {data['library_name']} not with transformers")
-    task = data["pipeline_tag"]
-    return task
-
-
-def check_task(task: str) -> Tuple[Dict, Any]:
-    """
-    Checks an incoming task string, to validate it's correct and return the default Pipeline and Model classes, and
-    default models if they exist.
-    Args:
-        task (`str`):
-            The task defining which pipeline will be returned. Currently accepted tasks are:
-            - `"audio-classification"`
-            - `"automatic-speech-recognition"`
-            - `"conversational"`
-            - `"feature-extraction"`
-            - `"fill-mask"`
-            - `"image-classification"`
-            - `"question-answering"`
-            - `"table-question-answering"`
-            - `"text2text-generation"`
-            - `"text-classification"` (alias `"sentiment-analysis"` available)
-            - `"text-generation"`
-            - `"token-classification"` (alias `"ner"` available)
-            - `"translation"`
-            - `"translation_xx_to_yy"`
-            - `"summarization"`
-            - `"zero-shot-classification"`
-            - `"zero-shot-image-classification"`
-    Returns:
-        (task_defaults`dict`, task_options: (`tuple`, None)) The actual dictionary required to initialize the pipeline
-        and some extra task options for parametrized tasks like "translation_XX_to_YY"
-    """
-    if task in TASK_ALIASES:
-        task = TASK_ALIASES[task]
-    if task in SUPPORTED_TASKS:
-        targeted_task = SUPPORTED_TASKS[task]
-        return targeted_task, None
-
-    if task.startswith("translation"):
-        tokens = task.split("_")
-        if len(tokens) == 4 and tokens[0] == "translation" and tokens[2] == "to":
-            targeted_task = SUPPORTED_TASKS["translation"]
-            return targeted_task, (tokens[1], tokens[3])
-        raise KeyError(f"Invalid translation task {task}, use 'translation_XX_to_YY' format")
-
-    raise KeyError(f"Unknown task {task}, available tasks are {get_supported_tasks() + ['translation_XX_to_YY']}")
 
 
 def pipeline(
@@ -428,6 +305,20 @@ def pipeline(
     >>> tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
     >>> pipeline("ner", model=model, tokenizer=tokenizer)
     ```"""
+    if not use_onnx:
+        return default_pipeline(task,
+                                model,
+                                config,
+                                tokenizer,
+                                feature_extractor,
+                                framework,
+                                revision,
+                                use_fast,
+                                use_auth_token,
+                                model_kwargs,
+                                pipeline_class
+                                )
+
     if ort_config is None:
         ort_config = ORTConfig(quantization_approach="dynamic")
 
@@ -606,15 +497,30 @@ def pipeline(
     if feature_extractor is not None:
         kwargs["feature_extractor"] = feature_extractor
 
+    quantizer = ORTQuantizer(ort_config)
+
+    if not graph_path.exists():
+        _export_onnx_graph(quantizer, model, graph_path, targeted_task["feature"])
+
+    logger.info(f"Loading onnx graph from {graph_path.as_posix()}")
+
+    framework = "pt"
+    if optimize:
+        onnx_opt_model_path = graph_path.parent.joinpath(
+            f"{graph_path.stem}-opt.onnx")
+        quantized_model_path = graph_path.parent.joinpath(
+            f"{graph_path.stem}-quantized.onnx")
+        if not quantized_model_path.exists() or not onnx_opt_model_path.exists():
+            _create_quantized_graph(quantizer, model, graph_path, targeted_task["feature"])
+        graph_path = quantized_model_path
+
+    onnx_model = create_model_for_providers(graph_path.as_posix())
+
     return pipeline_class(
         model=model,
         framework=framework,
         task=task,
-        use_onnx=use_onnx,
-        graph_path=graph_path,
-        optimize=optimize,
-        ort_config=ort_config,
-        feature=targeted_task["feature"],
         example=targeted_task["example"],
+        onnx_model=onnx_model,
         **kwargs
     )
