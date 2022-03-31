@@ -8,7 +8,7 @@ extras["dev"] = extras["testing"] + extras["quality"]
 
 setup(
     name="optimum_transformers",
-    version="0.1.1",
+    version="0.2.0",
     description="Accelerated nlp pipelines using Transformers, Optimum and ONNX Runtime",
     long_description=open("README.md", "r", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
@@ -19,7 +19,7 @@ setup(
               "infinity"],
     license="Apache",
     url="https://github.com/AlekseyKorshuk/optimum-transformers",
-    install_requires=[str(r.req) for r in parse_requirements("requirements.txt", session=PipSession())],
+    install_requires=[str(r.requirement) for r in parse_requirements("requirements.txt", session=PipSession())],
     extras_require=extras,
     python_requires=">=3.6.0",
     classifiers=[
