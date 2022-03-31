@@ -134,6 +134,7 @@ class QAPipelineTests(unittest.TestCase, metaclass=PipelineTestCaseMeta):
 
     @require_torch
     @require_onnxruntime
+    @slow
     def test_small_model_onnx_quantized(self):
         question_answerer = pipeline(
             "question-answering",
