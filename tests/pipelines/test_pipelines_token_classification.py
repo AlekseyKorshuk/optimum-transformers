@@ -615,15 +615,6 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
             ],
         )
 
-        token_classifier = pipeline(
-            task="token-classification", model=model_name, framework="pt", use_onnx=False, ignore_labels=["O", "I-MISC"]
-        )
-        outputs = token_classifier("This is a test !")
-        self.assertEqual(
-            nested_simplify(outputs),
-            [],
-        )
-
         token_classifier = pipeline(task="token-classification", model=model_name, framework="pt")
         # Overload offset_mapping
         outputs = token_classifier(
