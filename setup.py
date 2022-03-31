@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
-
+from pip._internal.req import parse_requirements
+from pip._internal.network.session import PipSession
 
 extras = {"testing": ["pytest", "pytest-xdist", "timeout-decorator", "psutil"],
           "quality": ["black >= 20.8b1", "isort >= 5", "flake8"]}
@@ -18,7 +19,7 @@ setup(
               "infinity"],
     license="Apache",
     url="https://github.com/AlekseyKorshuk/optimum-transformers",
-    install_requires=open("requirements.txt", "r", encoding="utf-8").read().splitlines(),
+    install_requires=parse_requirements("requirements.txt", session=PipSession()),
     extras_require=extras,
     python_requires=">=3.6.0",
     classifiers=[
