@@ -41,6 +41,7 @@ def plot_benchmark(results: dict, task: str, model_name: str):
     except:
         pass
     plt.show()
+    return fig
 
 
 
