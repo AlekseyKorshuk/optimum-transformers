@@ -1,11 +1,5 @@
 # Pipelines
 from .pipelines import (
-    CsvPipelineDataFormat,
-    JsonPipelineDataFormat,
-    OptimumNerPipeline,
-    PipedPipelineDataFormat,
-    Pipeline,
-    PipelineDataFormat,
     OptimumQuestionAnsweringPipeline,
     OptimumTextClassificationPipeline,
     OptimumTokenClassificationPipeline,
@@ -14,8 +8,6 @@ from .pipelines import (
     OptimumTextGenerationPipeline,
     OptimumFeatureExtractionPipeline,
     pipeline,
-    ArgumentHandler,
-    ZeroShotClassificationArgumentHandler
 )
 
 # Utils

@@ -3,11 +3,11 @@ import unittest
 from transformers import (
     MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING,
     TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING,
+    Pipeline,
 )
 
 from optimum_transformers import (
-    Pipeline,
-    ZeroShotClassificationPipeline,
+    OptimumZeroShotClassificationPipeline,
     pipeline,
 )
 from transformers.testing_utils import nested_simplify, require_tf, require_torch, slow
@@ -21,7 +21,7 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
     tf_model_mapping = TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING
 
     def get_test_pipeline(self, model, tokenizer, feature_extractor):
-        classifier = ZeroShotClassificationPipeline(
+        classifier = OptimumZeroShotClassificationPipeline(
             model=model, tokenizer=tokenizer, candidate_labels=["polics", "health"]
         )
         return classifier, ["Who are you voting for in 2020?", "My stomach hurts."]

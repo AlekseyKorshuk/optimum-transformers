@@ -17,7 +17,7 @@ from transformers.testing_utils import (
     require_torch_gpu,
     slow,
 )
-from optimum_transformers.pipelines import TokenClassificationPipeline, pipeline
+from optimum_transformers.pipelines import OptimumTokenClassificationPipeline, pipeline
 from optimum_transformers.utils import require_onnxruntime
 
 from .test_pipelines_common import ANY, PipelineTestCaseMeta
@@ -31,7 +31,7 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
     tf_model_mapping = TF_MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING
 
     def get_test_pipeline(self, model, tokenizer, feature_extractor):
-        token_classifier = TokenClassificationPipeline(model=model, tokenizer=tokenizer)
+        token_classifier = OptimumTokenClassificationPipeline(model=model, tokenizer=tokenizer)
         return token_classifier, ["A simple string", "A simple string that is quite a bit longer"]
 
     def run_pipeline_test(self, token_classifier, _):
@@ -92,7 +92,8 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
         self.run_aggregation_strategy(model, tokenizer)
 
     def run_aggregation_strategy(self, model, tokenizer):
-        token_classifier = TokenClassificationPipeline(model=model, tokenizer=tokenizer, aggregation_strategy="simple")
+        token_classifier = OptimumTokenClassificationPipeline(model=model, tokenizer=tokenizer,
+                                                              aggregation_strategy="simple")
         self.assertEqual(token_classifier._postprocess_params["aggregation_strategy"], AggregationStrategy.SIMPLE)
         outputs = token_classifier("A simple string")
         self.assertIsInstance(outputs, list)
@@ -111,7 +112,8 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
             ],
         )
 
-        token_classifier = TokenClassificationPipeline(model=model, tokenizer=tokenizer, aggregation_strategy="first")
+        token_classifier = OptimumTokenClassificationPipeline(model=model, tokenizer=tokenizer,
+                                                              aggregation_strategy="first")
         self.assertEqual(token_classifier._postprocess_params["aggregation_strategy"], AggregationStrategy.FIRST)
         outputs = token_classifier("A simple string")
         self.assertIsInstance(outputs, list)
@@ -130,7 +132,8 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
             ],
         )
 
-        token_classifier = TokenClassificationPipeline(model=model, tokenizer=tokenizer, aggregation_strategy="max")
+        token_classifier = OptimumTokenClassificationPipeline(model=model, tokenizer=tokenizer,
+                                                              aggregation_strategy="max")
         self.assertEqual(token_classifier._postprocess_params["aggregation_strategy"], AggregationStrategy.MAX)
         outputs = token_classifier("A simple string")
         self.assertIsInstance(outputs, list)
@@ -149,7 +152,7 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
             ],
         )
 
-        token_classifier = TokenClassificationPipeline(
+        token_classifier = OptimumTokenClassificationPipeline(
             model=model, tokenizer=tokenizer, aggregation_strategy="average"
         )
         self.assertEqual(token_classifier._postprocess_params["aggregation_strategy"], AggregationStrategy.AVERAGE)
@@ -607,8 +610,8 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
         self.assertEqual(
             nested_simplify(outputs),
             [
-                {"entity": "I-MISC", "score": 0.115, "index": 1, "word": "this"},   # , "start": 0, "end": 4
-                {"entity": "I-MISC", "score": 0.115, "index": 2, "word": "is"},     # , "start": 5, "end": 7
+                {"entity": "I-MISC", "score": 0.115, "index": 1, "word": "this"},  # , "start": 0, "end": 4
+                {"entity": "I-MISC", "score": 0.115, "index": 2, "word": "is"},  # , "start": 5, "end": 7
             ],
         )
 
@@ -686,7 +689,8 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
         )
 
         token_classifier = pipeline(
-            task="token-classification", model=model_name, framework="pt", use_onnx=True, optimize=True, ignore_labels=["O", "I-MISC"]
+            task="token-classification", model=model_name, framework="pt", use_onnx=True, optimize=True,
+            ignore_labels=["O", "I-MISC"]
         )
         outputs = token_classifier("This is a test !")
         self.assertEqual(

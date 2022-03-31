@@ -4,10 +4,10 @@ from transformers import (
     MODEL_FOR_QUESTION_ANSWERING_MAPPING,
     TF_MODEL_FOR_QUESTION_ANSWERING_MAPPING,
     LxmertConfig,
-    QuestionAnsweringPipeline,
 )
+from transformers.pipelines import QuestionAnsweringArgumentHandler
 from transformers.data.processors.squad import SquadExample
-from optimum_transformers.pipelines import QuestionAnsweringArgumentHandler, pipeline
+from optimum_transformers.pipelines import OptimumQuestionAnsweringPipeline, pipeline
 from transformers.testing_utils import is_pipeline_test, nested_simplify, require_tf, require_torch, slow
 from optimum_transformers.utils import require_onnxruntime
 
@@ -24,7 +24,7 @@ class QAPipelineTests(unittest.TestCase, metaclass=PipelineTestCaseMeta):
             # This is an bimodal model, we need to find a more consistent way
             # to switch on those models.
             return None, None
-        question_answerer = QuestionAnsweringPipeline(model, tokenizer)
+        question_answerer = OptimumQuestionAnsweringPipeline(model, tokenizer)
 
         examples = [
             {"question": "Where was HuggingFace founded ?", "context": "HuggingFace was founded in Paris."},

@@ -16,7 +16,10 @@ from transformers import (
     DistilBertForSequenceClassification,
     IBertConfig,
     RobertaConfig,
-    TextClassificationPipeline,
+
+)
+from optimum_transformers import (
+    OptimumTextClassificationPipeline,
     pipeline,
 )
 from transformers.pipelines import get_task
@@ -283,7 +286,7 @@ class CommonPipelineTest(unittest.TestCase):
     def test_check_task_auto_inference(self):
         pipe = pipeline(model="hf-internal-testing/tiny-random-distilbert")
 
-        self.assertIsInstance(pipe, TextClassificationPipeline)
+        self.assertIsInstance(pipe, OptimumTextClassificationPipeline)
 
     @require_torch
     def test_pipeline_batch_size_global(self):
@@ -297,7 +300,7 @@ class CommonPipelineTest(unittest.TestCase):
 
     @require_torch
     def test_pipeline_override(self):
-        class MyPipeline(TextClassificationPipeline):
+        class MyPipeline(OptimumTextClassificationPipeline):
             pass
 
         text_classifier = pipeline(model="hf-internal-testing/tiny-random-distilbert", pipeline_class=MyPipeline)
@@ -354,7 +357,7 @@ class CommonPipelineTest(unittest.TestCase):
             "hf-internal-testing/tiny-random-distilbert", output_hidden_states=True, output_attentions=True
         )
         tokenizer = AutoTokenizer.from_pretrained("hf-internal-testing/tiny-random-distilbert")
-        text_classifier = TextClassificationPipeline(model=model, tokenizer=tokenizer)
+        text_classifier = OptimumTextClassificationPipeline(model=model, tokenizer=tokenizer)
 
         # Used to throw an error because `hidden_states` are a tuple of tensors
         # instead of the expected tensor.
