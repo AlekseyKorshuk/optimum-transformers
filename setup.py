@@ -20,7 +20,7 @@ setup(
     license="Apache",
     url="https://github.com/AlekseyKorshuk/optimum-transformers",
     install_requires=['coloredlogs>=15.0,<16.0', 'datasets>=2.0,<3.0', 'matplotlib>=3.5,<4.0', 'onnx>=1.10,<2.0',
-                      'onnxruntime>=1.10,<2.0', 'optimum>=1.0,<2.0', 'psutil>=5.9,<6.0', 'seaborn>=0.11,<1.0',
+                      'onnxruntime==1.10', 'optimum>=1.0,<2.0', 'psutil>=5.9,<6.0', 'seaborn>=0.11,<1.0',
                       'transformers>=4.15,<5.0', 'tokenizers>=0.11.6,<0.12', 'sentencepiece>=0.1.96,<0.2'],
     extras_require=extras,
     python_requires=">=3.6.0",
