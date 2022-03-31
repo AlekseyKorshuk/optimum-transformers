@@ -1,6 +1,10 @@
 # Optimum Transformers
 
-![optimum-transformers](https://raw.githubusercontent.com/AlekseyKorshuk/optimum-transformers/master/data/social_preview.png?raw=True)
+[![Tests](https://github.com/AlekseyKorshuk/optimum-transformers/actions/workflows/python-app.yml/badge.svg)](https://github.com/AlekseyKorshuk/optimum-transformers/actions/workflows/python-app.yml)
+[![License](https://img.shields.io/github/license/AlekseyKorshuk/optimum-transformers.svg?color=blue)](https://github.com/AlekseyKorshuk/optimum-transformers/blob/master/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/optimum-transformers)](https://pypi.org/project/optimum-transformers/)
+
+<img src="https://raw.githubusercontent.com/AlekseyKorshuk/optimum-transformers/master/data/social_preview.png?raw=True" width="1200">
 
 Accelerated NLP pipelines for fast inference 🚀 on CPU and GPU. Built with 🤗Transformers, Optimum and ONNX runtime.
 
