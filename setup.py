@@ -19,7 +19,7 @@ setup(
               "infinity"],
     license="Apache",
     url="https://github.com/AlekseyKorshuk/optimum-transformers",
-    install_requires=parse_requirements("requirements.txt", session=PipSession()),
+    install_requires=[str(r.req) for r in parse_requirements("requirements.txt", session=PipSession())],
     extras_require=extras,
     python_requires=">=3.6.0",
     classifiers=[
