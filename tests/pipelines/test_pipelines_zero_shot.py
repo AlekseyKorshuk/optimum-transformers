@@ -15,6 +15,7 @@ from optimum_transformers.utils import require_onnxruntime
 
 from .test_pipelines_common import ANY, PipelineTestCaseMeta
 
+
 # @is_pipeline_test
 class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTestCaseMeta):
     model_mapping = MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING
@@ -124,7 +125,7 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
     def test_truncation(self):
         zero_shot_classifier = pipeline(
             "zero-shot-classification",
-            model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
+            model="hf-internal-testing/tiny-random-distilbert",
             framework="pt",
             use_onnx=False
         )
@@ -139,7 +140,7 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
     def test_small_model_pt(self):
         zero_shot_classifier = pipeline(
             "zero-shot-classification",
-            model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
+            model="hf-internal-testing/tiny-random-distilbert",
             framework="pt",
             use_onnx=False
         )
@@ -151,7 +152,7 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
             nested_simplify(outputs),
             {
                 "sequence": "Who are you voting for in 2020?",
-                "labels": ["science", "public health", "politics"],
+                "labels": ["science", "politics", "public health"],
                 "scores": [0.333, 0.333, 0.333],
             },
         )
@@ -161,7 +162,7 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
     def test_small_model_tf(self):
         zero_shot_classifier = pipeline(
             "zero-shot-classification",
-            model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
+            model="hf-internal-testing/tiny-random-distilbert",
             framework="tf",
             use_onnx=False
         )
@@ -173,7 +174,7 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
             nested_simplify(outputs),
             {
                 "sequence": "Who are you voting for in 2020?",
-                "labels": ["science", "public health", "politics"],
+                "labels": ["science", "politics", "public health"],
                 "scores": [0.333, 0.333, 0.333],
             },
         )
@@ -182,18 +183,19 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
     def test_small_model_onnx(self):
         zero_shot_classifier = pipeline(
             "zero-shot-classification",
-            model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
+            model="hf-internal-testing/tiny-random-distilbert",
             use_onnx=True,
         )
         outputs = zero_shot_classifier(
             "Who are you voting for in 2020?", candidate_labels=["politics", "public health", "science"]
         )
 
+        print(outputs)
         self.assertEqual(
             nested_simplify(outputs),
             {
                 "sequence": "Who are you voting for in 2020?",
-                "labels": ["science", "public health", "politics"],
+                "labels": ["science", "politics", "public health"],
                 "scores": [0.333, 0.333, 0.333],
             },
         )
@@ -201,7 +203,7 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
     def test_small_model_onnx_quantized(self):
         zero_shot_classifier = pipeline(
             "zero-shot-classification",
-            model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
+            model="hf-internal-testing/tiny-random-distilbert",
             use_onnx=True,
             optimize=True
         )
@@ -213,7 +215,7 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
             nested_simplify(outputs),
             {
                 "sequence": "Who are you voting for in 2020?",
-                "labels": ["science", "public health", "politics"],
+                "labels": ["science", "politics", "public health"],
                 "scores": [0.333, 0.333, 0.333],
             },
         )

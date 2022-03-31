@@ -256,7 +256,7 @@ class PipelineTestCaseMeta(type):
         return type.__new__(mcs, name, bases, dct)
 
 
-@is_pipeline_test
+# @is_pipeline_test
 class CommonPipelineTest(unittest.TestCase):
     @require_torch
     def test_pipeline_iteration(self):
@@ -353,11 +353,7 @@ class CommonPipelineTest(unittest.TestCase):
 
     @require_torch
     def test_unbatch_attentions_hidden_states(self):
-        model = DistilBertForSequenceClassification.from_pretrained(
-            "hf-internal-testing/tiny-random-distilbert", output_hidden_states=True, output_attentions=True
-        )
-        tokenizer = AutoTokenizer.from_pretrained("hf-internal-testing/tiny-random-distilbert")
-        text_classifier = OptimumTextClassificationPipeline(model=model, tokenizer=tokenizer)
+        text_classifier = pipeline("text-classification", model="hf-internal-testing/tiny-random-distilbert")
 
         # Used to throw an error because `hidden_states` are a tuple of tensors
         # instead of the expected tensor.
@@ -365,7 +361,7 @@ class CommonPipelineTest(unittest.TestCase):
         self.assertEqual(len(outputs), 20)
 
 
-@is_pipeline_test
+# @is_pipeline_test
 class PipelinePadTest(unittest.TestCase):
     @require_torch
     def test_pipeline_padding(self):
@@ -447,7 +443,7 @@ class PipelinePadTest(unittest.TestCase):
         )
 
 
-@is_pipeline_test
+# @is_pipeline_test
 @require_torch
 class PipelineUtilsTest(unittest.TestCase):
     def test_pipeline_dataset(self):

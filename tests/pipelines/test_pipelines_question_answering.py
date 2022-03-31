@@ -125,7 +125,6 @@ class QAPipelineTests(unittest.TestCase, metaclass=PipelineTestCaseMeta):
         question_answerer = pipeline(
             "question-answering",
             model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
-            framework="pt",
             use_onnx=True
         )
         outputs = question_answerer(
@@ -139,7 +138,6 @@ class QAPipelineTests(unittest.TestCase, metaclass=PipelineTestCaseMeta):
         question_answerer = pipeline(
             "question-answering",
             model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
-            framework="pt",
             use_onnx=True,
             optimize=True
         )

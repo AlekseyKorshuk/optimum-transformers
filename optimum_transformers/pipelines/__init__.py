@@ -5,7 +5,7 @@
 import os
 
 import warnings
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, Tuple, List
 from onnxruntime import GraphOptimizationLevel, InferenceSession, SessionOptions
 
 from transformers.configuration_utils import PretrainedConfig
@@ -28,14 +28,6 @@ from transformers.pipelines.base import (
     infer_framework_load_model,
 )
 
-from .base import (
-    _warmup_onnx_graph,
-    _forward_onnx,
-    create_model_for_providers,
-    _create_quantized_graph,
-    _export_onnx_graph,
-)
-
 from .feature_extraction import OptimumFeatureExtractionPipeline
 from .fill_mask import OptimumFillMaskPipeline
 
@@ -46,6 +38,14 @@ from .token_classification import (
     OptimumTokenClassificationPipeline,
 )
 from .zero_shot_classification import OptimumZeroShotClassificationPipeline
+
+from .base import (
+    _warmup_onnx_graph,
+    _forward_onnx,
+    create_model_for_providers,
+    _create_quantized_graph,
+    _export_onnx_graph,
+)
 
 if is_tf_available():
     import tensorflow as tf
@@ -81,6 +81,7 @@ TASK_ALIASES = {
     "sentiment-analysis": "text-classification",
     "ner": "token-classification",
 }
+
 SUPPORTED_TASKS = {
     "text-classification": {
         "impl": OptimumTextClassificationPipeline,
@@ -178,6 +179,64 @@ SUPPORTED_TASKS = {
         },
     },
 }
+
+
+def get_supported_tasks() -> List[str]:
+    """
+    Returns a list of supported task strings.
+    """
+    supported_tasks = list(SUPPORTED_TASKS.keys()) + list(TASK_ALIASES.keys())
+    supported_tasks.sort()
+    return supported_tasks
+
+
+def check_task(task: str) -> Tuple[Dict, Any]:
+    """
+    Checks an incoming task string, to validate it's correct and return the default Pipeline and Model classes, and
+    default models if they exist.
+
+    Args:
+        task (`str`):
+            The task defining which pipeline will be returned. Currently accepted tasks are:
+
+            - `"audio-classification"`
+            - `"automatic-speech-recognition"`
+            - `"conversational"`
+            - `"feature-extraction"`
+            - `"fill-mask"`
+            - `"image-classification"`
+            - `"question-answering"`
+            - `"table-question-answering"`
+            - `"text2text-generation"`
+            - `"text-classification"` (alias `"sentiment-analysis"` available)
+            - `"text-generation"`
+            - `"token-classification"` (alias `"ner"` available)
+            - `"translation"`
+            - `"translation_xx_to_yy"`
+            - `"summarization"`
+            - `"zero-shot-classification"`
+
+    Returns:
+        (task_defaults`dict`, task_options: (`tuple`, None)) The actual dictionary required to initialize the pipeline
+        and some extra task options for parametrized tasks like "translation_XX_to_YY"
+
+
+    """
+    if task in TASK_ALIASES:
+        task = TASK_ALIASES[task]
+    if task in SUPPORTED_TASKS:
+        targeted_task = SUPPORTED_TASKS[task]
+        return targeted_task, None
+
+    if task.startswith("translation"):
+        tokens = task.split("_")
+        if len(tokens) == 4 and tokens[0] == "translation" and tokens[2] == "to":
+            targeted_task = SUPPORTED_TASKS["translation"]
+            return targeted_task, (tokens[1], tokens[3])
+        raise KeyError(f"Invalid translation task {task}, use 'translation_XX_to_YY' format")
+
+    raise KeyError(f"Unknown task {task}, available tasks are {get_supported_tasks() + ['translation_XX_to_YY']}")
+
 
 NO_FEATURE_EXTRACTOR_TASKS = set()
 NO_TOKENIZER_TASKS = set()

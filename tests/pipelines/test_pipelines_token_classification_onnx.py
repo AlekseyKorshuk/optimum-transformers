@@ -610,8 +610,8 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
         self.assertEqual(
             nested_simplify(outputs),
             [
-                {"entity": "I-MISC", "score": 0.115, "index": 1, "word": "this"},  # , "start": 0, "end": 4
-                {"entity": "I-MISC", "score": 0.115, "index": 2, "word": "is"},  # , "start": 5, "end": 7
+                {"entity": "I-MISC", "score": 0.115, "index": 1, "word": "this", "start": 0, "end": 4},
+                {"entity": "I-MISC", "score": 0.115, "index": 2, "word": "is", "start": 5, "end": 7},
             ],
         )
 
@@ -624,18 +624,18 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
             [],
         )
 
-        # token_classifier = pipeline(task="token-classification", model=model_name, framework="pt")
-        # # Overload offset_mapping
-        # outputs = token_classifier(
-        #     "This is a test !", offset_mapping=[(0, 0), (0, 1), (0, 2), (0, 0), (0, 0), (0, 0), (0, 0)]
-        # )
-        # self.assertEqual(
-        #     nested_simplify(outputs),
-        #     [
-        #         {"entity": "I-MISC", "score": 0.115, "index": 1, "word": "this", "start": 0, "end": 1},
-        #         {"entity": "I-MISC", "score": 0.115, "index": 2, "word": "is", "start": 0, "end": 2},
-        #     ],
-        # )
+        token_classifier = pipeline(task="token-classification", model=model_name, framework="pt")
+        # Overload offset_mapping
+        outputs = token_classifier(
+            "This is a test !", offset_mapping=[(0, 0), (0, 1), (0, 2), (0, 0), (0, 0), (0, 0), (0, 0)]
+        )
+        self.assertEqual(
+            nested_simplify(outputs),
+            [
+                {"entity": "I-MISC", "score": 0.115, "index": 1, "word": "this", "start": 0, "end": 1},
+                {"entity": "I-MISC", "score": 0.115, "index": 2, "word": "is", "start": 0, "end": 2},
+            ],
+        )
 
     @require_torch
     @require_onnxruntime
@@ -727,6 +727,7 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
 
     @slow
     @require_torch
+    @require_onnxruntime
     def test_simple(self):
         token_classifier = pipeline(task="ner", model="dslim/bert-base-NER", grouped_entities=True)
         sentence = "Hello Sarah Jessica Parker who Jessica lives in New York"

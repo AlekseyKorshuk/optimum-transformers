@@ -1,7 +1,9 @@
+import numpy as np
 from transformers.modeling_outputs import SequenceClassifierOutput
 from .base import _forward_onnx, _warmup_onnx_graph
 from transformers import ZeroShotClassificationPipeline
 import torch
+
 
 class OptimumZeroShotClassificationPipeline(ZeroShotClassificationPipeline):
     def __init__(self, *args, onnx_model, example, **kwargs):

@@ -1,5 +1,5 @@
 from transformers.modeling_outputs import BaseModelOutput
-from . import _forward_onnx, _warmup_onnx_graph
+from .base import _forward_onnx, _warmup_onnx_graph
 from transformers import FeatureExtractionPipeline
 import torch
 
