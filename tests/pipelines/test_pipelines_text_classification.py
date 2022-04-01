@@ -15,21 +15,19 @@ class TextClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTestC
     model_mapping = MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING
     tf_model_mapping = TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING
 
-    # @slow
     @require_torch
     def test_small_model_onnx(self):
         text_classifier = pipeline(
-            task="text-classification", framework="pt"
+            task="text-classification", model="philschmid/MiniLM-L6-H384-uncased-sst2", framework="pt"
         )
 
         outputs = text_classifier("This is great !")
         self.assertEqual(nested_simplify(outputs), [{"label": "LABEL_0", "score": 0.504}])
 
-    # @slow
     @require_torch
     def test_small_model_onnx_quantized(self):
         text_classifier = pipeline(
-            task="text-classification", framework="pt",
+            task="text-classification", model="philschmid/MiniLM-L6-H384-uncased-sst2", framework="pt",
             optimize=True
         )
 
