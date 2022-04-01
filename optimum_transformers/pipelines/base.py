@@ -13,7 +13,7 @@ def _create_quantized_graph(quantizer, model, graph_path, feature):
 
 def _warmup_onnx_graph(self, n=10):
     for _ in range(n):
-        self.__call__(*self.example)
+        self.__call__(*self.example.values())
 
 
 def _forward_onnx(onnx_model, inputs, return_tensors=False):
