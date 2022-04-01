@@ -105,7 +105,7 @@ if st.button("Run"):
     from optimum.onnxruntime import ORTConfig
 
     ort_config = ORTConfig(quantization_approach="dynamic", extra_options={"inter_op_num_threads": 1})
-    benchmark = Benchmark(pipeline_task, model_name, ort_config)
+    benchmark = Benchmark(pipeline_task, model_name)
     with st.spinner(text=f"Benchmarking... This may take some time to load models..."):
         results = benchmark(num_tests, plot=False)
 
