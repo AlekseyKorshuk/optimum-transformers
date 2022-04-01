@@ -1,12 +1,6 @@
-import json
-import math
-import random
-import os
+
 import streamlit as st
-import lyricsgenius
-import transformers
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from optimum_transformers import pipeline
+
 from optimum_transformers.pipelines import SUPPORTED_TASKS
 from optimum_transformers import Benchmark
 from optimum_transformers.utils.benchmark import plot_benchmark
