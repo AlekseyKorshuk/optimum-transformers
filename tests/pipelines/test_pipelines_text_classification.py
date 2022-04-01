@@ -15,48 +15,26 @@ class TextClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTestC
     model_mapping = MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING
     tf_model_mapping = TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING
 
+    # @slow
     @require_torch
     def test_small_model_onnx(self):
         text_classifier = pipeline(
-            task="text-classification", model="hf-internal-testing/tiny-random-distilbert", framework="pt"
+            task="text-classification", framework="pt"
         )
 
         outputs = text_classifier("This is great !")
         self.assertEqual(nested_simplify(outputs), [{"label": "LABEL_0", "score": 0.504}])
 
+    # @slow
     @require_torch
     def test_small_model_onnx_quantized(self):
         text_classifier = pipeline(
-            task="text-classification", model="hf-internal-testing/tiny-random-distilbert", framework="pt",
+            task="text-classification", framework="pt",
             optimize=True
         )
 
         outputs = text_classifier("This is great !")
         self.assertEqual(nested_simplify(outputs), [{"label": "LABEL_0", "score": 0.504}])
-
-    @slow
-    @require_torch
-    def test_pt_bert(self):
-        text_classifier = pipeline("text-classification")
-
-        outputs = text_classifier("This is great !")
-        self.assertEqual(nested_simplify(outputs), [{"label": "POSITIVE", "score": 1.0}])
-        outputs = text_classifier("This is bad !")
-        self.assertEqual(nested_simplify(outputs), [{"label": "NEGATIVE", "score": 1.0}])
-        outputs = text_classifier("Birds are a type of animal")
-        self.assertEqual(nested_simplify(outputs), [{"label": "POSITIVE", "score": 0.988}])
-
-    @slow
-    @require_tf
-    def test_tf_bert(self):
-        text_classifier = pipeline("text-classification", framework="tf")
-
-        outputs = text_classifier("This is great !")
-        self.assertEqual(nested_simplify(outputs), [{"label": "POSITIVE", "score": 1.0}])
-        outputs = text_classifier("This is bad !")
-        self.assertEqual(nested_simplify(outputs), [{"label": "NEGATIVE", "score": 1.0}])
-        outputs = text_classifier("Birds are a type of animal")
-        self.assertEqual(nested_simplify(outputs), [{"label": "POSITIVE", "score": 0.988}])
 
     def get_test_pipeline(self, model, tokenizer, feature_extractor):
         text_classifier = OptimumTextClassificationPipeline(model=model, tokenizer=tokenizer)

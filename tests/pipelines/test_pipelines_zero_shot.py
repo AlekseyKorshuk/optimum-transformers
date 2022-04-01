@@ -147,7 +147,6 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
             "Who are you voting for in 2020?", candidate_labels=["politics", "public health", "science"]
         )
 
-        print(outputs)
         self.assertEqual(
             nested_simplify(outputs),
             {
