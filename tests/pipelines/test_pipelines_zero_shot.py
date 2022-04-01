@@ -136,6 +136,7 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
             "Who are you voting for in 2020?" * 100, candidate_labels=["politics", "public health", "science"]
         )
 
+    @slow
     @require_onnxruntime
     def test_small_model_onnx(self):
         zero_shot_classifier = pipeline(
@@ -156,6 +157,7 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
             },
         )
 
+    @slow
     @require_torch
     @require_onnxruntime
     def test_small_model_onnx_quantized(self):
