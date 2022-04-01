@@ -94,32 +94,6 @@ class QAPipelineTests(unittest.TestCase, metaclass=PipelineTestCaseMeta):
         self.assertEqual(outputs, {"answer": ANY(str), "start": ANY(int), "end": ANY(int), "score": ANY(float)})
 
     @require_torch
-    def test_small_model_pt(self):
-        question_answerer = pipeline(
-            "question-answering",
-            model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
-            framework="pt",
-            use_onnx=False
-        )
-        outputs = question_answerer(
-            question="Where was HuggingFace founded ?", context="HuggingFace was founded in Paris."
-        )
-        self.assertEqual(nested_simplify(outputs), {"score": 0.01, "start": 0, "end": 11, "answer": "HuggingFace"})
-
-    @require_tf
-    def test_small_model_tf(self):
-        question_answerer = pipeline(
-            "question-answering",
-            model="sshleifer/tiny-distilbert-base-cased-distilled-squad",
-            framework="tf",
-            use_onnx=False
-        )
-        outputs = question_answerer(
-            question="Where was HuggingFace founded ?", context="HuggingFace was founded in Paris."
-        )
-        self.assertEqual(nested_simplify(outputs), {"score": 0.011, "start": 0, "end": 11, "answer": "HuggingFace"})
-
-    @require_torch
     @require_onnxruntime
     def test_small_model_onnx(self):
         question_answerer = pipeline(

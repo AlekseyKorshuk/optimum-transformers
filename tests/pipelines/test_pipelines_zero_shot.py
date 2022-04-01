@@ -136,49 +136,6 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
             "Who are you voting for in 2020?" * 100, candidate_labels=["politics", "public health", "science"]
         )
 
-    @require_torch
-    def test_small_model_pt(self):
-        zero_shot_classifier = pipeline(
-            "zero-shot-classification",
-            model="hf-internal-testing/tiny-random-distilbert",
-            framework="pt",
-            use_onnx=False
-        )
-        outputs = zero_shot_classifier(
-            "Who are you voting for in 2020?", candidate_labels=["politics", "public health", "science"]
-        )
-
-        self.assertEqual(
-            nested_simplify(outputs),
-            {
-                "sequence": "Who are you voting for in 2020?",
-                "labels": ["science", "politics", "public health"],
-                "scores": [0.333, 0.333, 0.333],
-            },
-        )
-
-    @require_tf
-    @require_onnxruntime
-    def test_small_model_tf(self):
-        zero_shot_classifier = pipeline(
-            "zero-shot-classification",
-            model="hf-internal-testing/tiny-random-distilbert",
-            framework="tf",
-            use_onnx=False
-        )
-        outputs = zero_shot_classifier(
-            "Who are you voting for in 2020?", candidate_labels=["politics", "public health", "science"]
-        )
-
-        self.assertEqual(
-            nested_simplify(outputs),
-            {
-                "sequence": "Who are you voting for in 2020?",
-                "labels": ["science", "politics", "public health"],
-                "scores": [0.333, 0.333, 0.333],
-            },
-        )
-
     @require_onnxruntime
     def test_small_model_onnx(self):
         zero_shot_classifier = pipeline(
