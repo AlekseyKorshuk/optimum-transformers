@@ -1,5 +1,19 @@
+import pip
+
+
+def install(package):
+    if hasattr(pip, 'main'):
+        pip.main(['install', package])
+    else:
+        pip._internal.main(['install', package])
+
 
 import streamlit as st
+
+try:
+    import optimum_transformers
+except:
+    install("optimum-transformers")
 
 from optimum_transformers.pipelines import SUPPORTED_TASKS
 from optimum_transformers import Benchmark
