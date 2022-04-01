@@ -32,12 +32,14 @@ class Benchmark:
 
     def __init__(self,
                  task: str,
-                 model: str = None
+                 model: str = None,
+                 ort_config=None
                  ):
         self.task = task
         if model == "":
             model = None
         self.model = model
+        self.ort_config = ort_config
 
     def __call__(self, num_tests: int = 100, model_inputs: dict = None, plot: bool = False):
         if not model_inputs:
@@ -56,7 +58,7 @@ class Benchmark:
     def run_benchmark(self, num_tests: int, model_input: dict):
         results = {}
         for label, pipeline_args in PIPELINES:
-            pipeline_ = pipeline(self.task, self.model, **pipeline_args)
+            pipeline_ = pipeline(self.task, self.model, ort_config=self.ort_config, **pipeline_args)
             # Compute
             time_buffer = []
 
