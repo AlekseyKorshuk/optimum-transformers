@@ -666,7 +666,6 @@ class TokenClassificationPipelineTests(unittest.TestCase, metaclass=PipelineTest
 
     @require_torch
     @require_onnxruntime
-#     @slow
     def test_small_model_pt_onnx_quantized(self):
         model_name = "hf-internal-testing/tiny-bert-for-token-classification"
         token_classifier = pipeline(task="token-classification", model=model_name, framework="pt", use_onnx=True,

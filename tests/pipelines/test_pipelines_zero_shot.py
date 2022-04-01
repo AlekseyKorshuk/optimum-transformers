@@ -202,7 +202,6 @@ class ZeroShotClassificationPipelineTests(unittest.TestCase, metaclass=PipelineT
 
     @require_torch
     @require_onnxruntime
-    @slow
     def test_small_model_onnx_quantized(self):
         zero_shot_classifier = pipeline(
             "zero-shot-classification",
