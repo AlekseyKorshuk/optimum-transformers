@@ -26,7 +26,7 @@ class OptimumText2TextGenerationPipeline(Text2TextGenerationPipeline):
         generate_kwargs["max_length"] = generate_kwargs.get("max_length", self.model.config.max_length)
         self.check_inputs(input_length, generate_kwargs["min_length"], generate_kwargs["max_length"])
         generation_matrix = GenerationMixin(self.model, self.onnx_model)
-        output_ids = generation_matrix(**model_inputs, **generate_kwargs)
+        output_ids = generation_matrix.generate(**model_inputs, **generate_kwargs)
         out_b = output_ids.shape[0]
 
         if self.framework == "pt":
@@ -34,4 +34,3 @@ class OptimumText2TextGenerationPipeline(Text2TextGenerationPipeline):
         elif self.framework == "tf":
             output_ids = tf.reshape(output_ids, (in_b, out_b // in_b, *output_ids.shape[1:]))
         return {"output_ids": output_ids}     
-    
