@@ -56,6 +56,7 @@ if is_tf_available():
         TFAutoModelForCausalLM,
         TFAutoModelForMaskedLM,
         TFAutoModelForQuestionAnswering,
+        TFAutoModelForSeq2SeqLM,
         TFAutoModelForSequenceClassification,
         TFAutoModelForTokenClassification,
     )
@@ -68,6 +69,7 @@ if is_torch_available():
         AutoModelForCausalLM,
         AutoModelForMaskedLM,
         AutoModelForQuestionAnswering,
+        AutoModelForSeq2SeqLM,
         AutoModelForSequenceClassification,
         AutoModelForTokenClassification,
     )
