@@ -1531,13 +1531,22 @@ class GenerationMixin:
 
             # prepare model inputs
             model_inputs = self.model.prepare_inputs_for_generation(input_ids, **model_kwargs)
+            print(model_inputs.keys())
 
             # forward pass to get next token
             if self.use_onnx:
-                inputs_onnx = {
-                    "input_ids": model_inputs["input_ids"].cpu().detach().numpy(),
-                    "attention_mask": model_inputs["attention_mask"].cpu().detach().numpy()
-                }
+                if self.model.config.is_encoder_decoder:
+                    inputs_onnx = {
+                        "input_ids": input_ids.cpu().detach().numpy(),
+                        "attention_mask": model_inputs["attention_mask"].cpu().detach().numpy(),
+                        "decoder_input_ids": model_inputs["decoder_input_ids"].cpu().detach().numpy(),
+                        "decoder_attention_mask": model_inputs["attention_mask"].cpu().detach().numpy(),
+                    }
+                else:
+                    inputs_onnx = {
+                        "input_ids": model_inputs["input_ids"].cpu().detach().numpy(),
+                        "attention_mask": model_inputs["attention_mask"].cpu().detach().numpy()
+                    }
                 outputs = CausalLMOutputWithCrossAttentions(
                     logits=torch.tensor(self.onnx_model.run(None, inputs_onnx)[0]))
             else:
@@ -1783,10 +1792,19 @@ class GenerationMixin:
 
             # forward pass to get next token
             if self.use_onnx:
-                inputs_onnx = {
-                    "input_ids": model_inputs["input_ids"].cpu().detach().numpy(),
-                    "attention_mask": model_inputs["attention_mask"].cpu().detach().numpy()
-                }
+                if self.model.config.is_encoder_decoder:
+                    inputs_onnx = {
+                        "input_ids": input_ids.cpu().detach().numpy(),
+                        "attention_mask": model_inputs["attention_mask"].cpu().detach().numpy(),
+                    }
+                    if self.model.use_past:
+                        inputs_onnx["decoder_inputs_ids"] = model_inputs["decoder_inputs_ids"].cpu().detach().numpy()
+                        inputs_onnx["decoder_attention_mask"] = model_inputs["decoder_attention_mask"].cpu().detach().numpy()
+                else:
+                    inputs_onnx = {
+                        "input_ids": model_inputs["input_ids"].cpu().detach().numpy(),
+                        "attention_mask": model_inputs["attention_mask"].cpu().detach().numpy()
+                    }
                 outputs = CausalLMOutputWithCrossAttentions(
                     logits=torch.tensor(self.onnx_model.run(None, inputs_onnx)[0]))
             else:
