@@ -34,6 +34,7 @@ from .fill_mask import OptimumFillMaskPipeline
 from .question_answering import OptimumQuestionAnsweringPipeline
 from .text_classification import OptimumTextClassificationPipeline
 from .text_generation import OptimumTextGenerationPipeline
+from .text2text_generation import OptimumText2TextGenerationPipeline
 from .token_classification import (
     OptimumTokenClassificationPipeline,
 )
@@ -55,6 +56,7 @@ if is_tf_available():
         TFAutoModelForCausalLM,
         TFAutoModelForMaskedLM,
         TFAutoModelForQuestionAnswering,
+        TFAutoModelForSeq2SeqLM,
         TFAutoModelForSequenceClassification,
         TFAutoModelForTokenClassification,
     )
@@ -67,6 +69,7 @@ if is_torch_available():
         AutoModelForCausalLM,
         AutoModelForMaskedLM,
         AutoModelForQuestionAnswering,
+        AutoModelForSeq2SeqLM,
         AutoModelForSequenceClassification,
         AutoModelForTokenClassification,
     )
@@ -174,6 +177,17 @@ SUPPORTED_TASKS = {
         "default": {"model": {"pt": "gpt2", "tf": "gpt2"}},
         "type": "text",
         "feature": "causal-lm",
+        "example": {
+            "text_inputs": "HuggingFace is creating a tool that the community uses to solve NLP tasks."
+        },
+    },
+    "text2text-generation": {
+        "impl": OptimumText2TextGenerationPipeline,
+        "tf": (TFAutoModelForSeq2SeqLM,) if is_tf_available() else (),
+        "pt": (AutoModelForSeq2SeqLM,) if is_torch_available() else (),
+        "default": {"model": {"pt": "t5-base", "tf": "t5-base"}},
+        "type": "text",
+        "feature": "seq2seq-lm",
         "example": {
             "text_inputs": "HuggingFace is creating a tool that the community uses to solve NLP tasks."
         },
